@@ -15,13 +15,30 @@ const colors = {
   textDark: '#1a3d2a',
 };
 
+// AWL Sun Logo - 12-pointed starburst
+const SunLogo = ({ size = 120, color }) => {
+  // Generate 12-point starburst: 24 points alternating outer/inner radius
+  const cx = 60, cy = 60, outerR = 56, innerR = 38, points = 12;
+  const coords = [];
+  for (let i = 0; i < points * 2; i++) {
+    const angle = (Math.PI * 2 * i) / (points * 2) - Math.PI / 2;
+    const r = i % 2 === 0 ? outerR : innerR;
+    coords.push(`${cx + r * Math.cos(angle)},${cy + r * Math.sin(angle)}`);
+  }
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120">
+      <polygon points={coords.join(' ')} fill={color || colors.yellow} />
+    </svg>
+  );
+};
+
 // =============================================================================
 // GOOGLE SHEETS CSV URLs
 // =============================================================================
 const SHEETS_URLS = {
   schedule: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=900398120&single=true&output=csv',
   leaderboard: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=483982929&single=true&output=csv',
-  // stats: 'YOUR_STATS_CSV_URL', // Add when you have the URL
+  stats: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=1427498880&single=true&output=csv',
 };
 
 // =============================================================================
@@ -156,26 +173,32 @@ const parseLeaderboardCSV = (csvText) => {
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
 
-    // Find week headers row (contains "Week" and numbers)
-    if (row[3] === 'Week' || row[3] === 'Total') {
-      // Extract week headers from row - columns 4 onwards are weeks
+    // Find week headers row (contains "Week" in column 3)
+    if (row[3] === 'Week') {
+      // Extract week headers from row - columns 4 onwards are weeks (1, 2, 3, 4, Major, 5, etc.)
       weekHeaders = row.slice(4).filter(h => h && h !== '');
       continue;
     }
 
-    // Detect group headers
-    if (row[2] === 'Group A') {
+    // Detect group headers - check if any cell contains "Group A", "Group B", etc.
+    const rowStr = row.join(' ');
+    if (rowStr.includes('Group A') && row[3] === 'Total') {
       currentGroup = 'groupA';
       continue;
-    } else if (row[2] === 'Group B') {
+    } else if (rowStr.includes('Group B')) {
       currentGroup = 'groupB';
       continue;
-    } else if (row[2] === 'Group C') {
+    } else if (rowStr.includes('Group C')) {
       currentGroup = 'groupC';
       continue;
-    } else if (row[2] === 'Group D') {
+    } else if (rowStr.includes('Group D')) {
       currentGroup = 'groupD';
       continue;
+    }
+
+    // Stop parsing players if we hit Weekly Low or other summary sections
+    if (rowStr.includes('Weekly Low')) {
+      currentGroup = null;
     }
 
     // Parse player rows (has rank in column 1, name in column 2, total in column 3)
@@ -188,21 +211,30 @@ const parseLeaderboardCSV = (csvText) => {
       const weeks = row.slice(4).map(val => {
         const num = parseFloat(val);
         return isNaN(num) ? 0 : num;
-      }).filter((_, idx) => idx < weekHeaders.length);
+      });
+      // Trim to match the number of week headers
+      const trimmedWeeks = weeks.slice(0, weekHeaders.length);
 
       leaderboard[currentGroup].push({
         rank,
         name,
         total,
-        weeks,
+        weeks: trimmedWeeks,
       });
     }
 
     // Parse birdie stats (look for "Total Birdies:" and "Birdie King:")
     if (row.some(cell => cell && cell.includes('Total Birdies:'))) {
       const birdieIdx = row.findIndex(cell => cell && cell.includes('Total Birdies:'));
-      if (birdieIdx >= 0 && row[birdieIdx + 1]) {
-        leagueStats.totalBirdies = parseInt(row[birdieIdx + 1]) || 0;
+      if (birdieIdx >= 0) {
+        // Look for the number in nearby cells (it might be 1 or 2 columns over)
+        for (let j = birdieIdx + 1; j < Math.min(birdieIdx + 4, row.length); j++) {
+          const num = parseInt(row[j]);
+          if (!isNaN(num) && num > 0) {
+            leagueStats.totalBirdies = num;
+            break;
+          }
+        }
       }
     }
     if (row.some(cell => cell && cell.includes('Birdie King:'))) {
@@ -237,6 +269,114 @@ const parseLeaderboardCSV = (csvText) => {
   return { leaderboard, leagueStats, weekHeaders };
 };
 
+// Parse stats CSV into app format
+const parseStatsCSV = (csvText) => {
+  const rows = parseCSV(csvText);
+  const statsData = [];
+  let lowestNetRecord = null;
+  let lowestGrossRecord = null;
+  let mostBirdiesRecord = null;
+
+  // Find the row with stats headers (contains "Total Gross", "Avg Gross", etc.)
+  let headerRowIndex = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].some(cell => cell && cell.includes('Total Gross'))) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  if (headerRowIndex === -1) return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord };
+
+  // Parse player stats rows (rows after header that have player names)
+  for (let i = headerRowIndex + 1; i < rows.length; i++) {
+    const row = rows[i];
+    const name = row[1]; // Player name is in column 1
+
+    // Stop when we hit "All Time Record" section
+    if (row.some(cell => cell && cell.includes('All Time'))) break;
+
+    // Skip empty rows - continue, don't break
+    if (!name || name.trim() === '') continue;
+
+    const totalGross = parseFloat(row[2]) || 0;
+    const avgGross = parseFloat(row[3]) || 0;
+    const totalNet = parseFloat(row[4]) || 0;
+    const avgNet = parseFloat(row[5]) || 0;
+    const avgPts = parseFloat(row[6]) || 0;
+    const avgHdcp = parseFloat(row[7]) || 0;
+    const birdies = parseInt(row[8]) || 0;
+    const missedWeeks = parseInt(row[9]) || 0;
+
+    // Only add if we have valid data (name and totalGross > 0)
+    if (name && totalGross > 0) {
+      statsData.push({
+        player: name,
+        totalGross,
+        avgGross,
+        totalNet,
+        avgNet,
+        avgPts,
+        avgHdcp,
+        birdies,
+        missedWeeks,
+      });
+    }
+  }
+
+  // Parse Lowest Net and Lowest Gross records from the CSV
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const rowText = row.join(' ').toLowerCase();
+
+    // Look for "Lowest Net:" row
+    if (rowText.includes('lowest net')) {
+      for (let j = 0; j < row.length; j++) {
+        if (row[j] && row[j].toLowerCase().includes('lowest net')) {
+          // Name is in next column, score is column after that
+          const name = row[j + 1] || '';
+          const score = parseInt(row[j + 2]) || 0;
+          if (name && score > 0) {
+            lowestNetRecord = { player: name.trim(), score };
+          }
+          break;
+        }
+      }
+    }
+
+    // Look for "Lowest Gross:" row
+    if (rowText.includes('lowest gross')) {
+      for (let j = 0; j < row.length; j++) {
+        if (row[j] && row[j].toLowerCase().includes('lowest gross')) {
+          // Name is in next column, score is column after that
+          const name = row[j + 1] || '';
+          const score = parseInt(row[j + 2]) || 0;
+          if (name && score > 0) {
+            lowestGrossRecord = { player: name.trim(), score };
+          }
+          break;
+        }
+      }
+    }
+
+    // Look for "Most Birdies" row
+    if (rowText.includes('most birdies')) {
+      for (let j = 0; j < row.length; j++) {
+        if (row[j] && row[j].toLowerCase().includes('most birdies')) {
+          const name = row[j + 1] || '';
+          const score = parseInt(row[j + 2]) || 0;
+          if (name && score > 0) {
+            mostBirdiesRecord = { player: name.trim(), score };
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord };
+};
+
 // =============================================================================
 // DATA - Static data (will add more Google Sheets fetches later)
 // =============================================================================
@@ -247,31 +387,133 @@ const defaultWeekHeaders = ['1', '2', '3', '4', 'S.O.', '5', '6', '7', '8', '9',
 // Leaderboard data - now fetched from Google Sheets (see LeaderboardTab component)
 // Schedule data - now fetched from Google Sheets (see ScheduleTab component)
 
-// Rules organized by category
+// Rules organized by category with bullet points
 const rulesData = [
   // LEAGUE OVERVIEW
-  { id: 1, title: 'League Structure', category: 'League Overview', content: 'A 14-week summer league with a 12-week regular season, a mid-season major, and a 36-hole championship weekend. Courses and schedule are predetermined. Courses available for the regular season: Big Met, Hilliard Lake, Springvale, and Bob-O-Link.' },
-  { id: 2, title: 'Seneca Open', category: 'League Overview', content: 'May 30th - A mid-season, 27-hole major team event played with all members. The winning team receives regular-season points. Each 9 will consist of a new game: 2-man Scramble (no handicap), Team Stroke Play (combine net score), and Alt Shot (no handicap).' },
-  { id: 3, title: 'Championship Weekend', category: 'League Overview', content: "Aug 8th & 9th - Championship weekend will be played together and finish with an awards ceremony at Chad's house on Sunday afternoon (members' wives and families are welcome). Saturday at Manakiki (18 holes), Sunday at Sleepy Hollow (18 holes). The winner of championship weekend is the winner of the entire league." },
-  { id: 4, title: 'Scores', category: 'League Overview', content: 'The winner of each week will receive points added to their total for the regular season. 18Birdies will track handicaps and be the source of truth for net scoring. Weekly winners receive: 4 for first, 2 for second, 1 for third. Seneca Open points: 6 for first, 5 for second, 4 for third, 3 for fourth, 2 for fifth, 1 for sixth, 0 for seventh & eighth. End of season strokes (does not affect handicaps): 4 for first, 2 for second, 1 for third.' },
-  { id: 5, title: 'Walking', category: 'League Overview', content: 'This is a walking league. It does not matter if you dropped acid the night before and did not get any sleep and show up to the course still drunk - you must walk. Any real reason for not walking (injury) can be approved by the other members of your group.' },
-  { id: 6, title: 'Makeup Rounds', category: 'League Overview', content: 'If you miss a week with your group, you have 2 weeks to make up the round with anyone in the AM league. You can also play ahead of the week. Needs to be the same tee and the other member must sign off on the legit score.' },
-  { id: 7, title: '18Birdies', category: 'League Overview', content: 'Must have a handicap in 18Birdies to start or your group can decide on a manual one to begin with. We will use 18Birdies for consistent handicap tracking and following scores. Members must use 18Birdies in real-time so scores are all on one scorecard.' },
-  { id: 8, title: 'Membership Dues & Payouts', category: 'League Overview', content: "Dues are $150 per Member. Members must pay 100% of their dues before they tee off Week 1. If they tee off without paying, they will be DQ'd for said round until fully paid. Payouts: 1st $900, 2nd $300, 3rd $100, Gross Winner $100, Seneca Open $200 (split between 2), Regular Season $140 each group, Weekly Winner $20 each week." },
-  { id: 9, title: 'Birdie Pot', category: 'League Overview', content: 'During the regular season, Seneca Open, and Championship Weekend, for every birdie a member scores, every member will add $0.50 to a birdie pot. The last person to card a birdie throughout the season will receive 50% of the pot. The member with the most birdies for the year will receive the other 50% of the pot. Tracking will be on the leaderboard.' },
+  { id: 1, title: 'League Structure', category: 'League Overview', bullets: [
+    'A 14-week summer league with a 12-week regular season, a mid-season major, and a 36-hole championship weekend',
+    'Courses and schedule are predetermined',
+    'Regular season courses: Big Met, Hilliard Lake, Springvale, and Bob-O-Link',
+  ]},
+  { id: 2, title: 'Seneca Open', category: 'League Overview', bullets: [
+    'May 30th - A mid-season, 27-hole major team event played with all members',
+    'The winning team receives regular-season points',
+    'Each 9 will consist of a new game:',
+  ], subBullets: [
+    '2-man Scramble (no handicap)',
+    'Team Stroke Play (combine net score)',
+    'Alt Shot (no handicap)',
+  ]},
+  { id: 3, title: 'Championship Weekend', category: 'League Overview', bullets: [
+    "Aug 8th & 9th - Championship weekend will be played together and finish with an awards ceremony at Chad's house on Sunday afternoon (members' wives and families are welcome)",
+    'Saturday at Manakiki (18 holes)',
+    'Sunday at Sleepy Hollow (18 holes)',
+    'The winner of championship weekend is the winner of the entire league',
+  ]},
+  { id: 4, title: 'Scores', category: 'League Overview', bullets: [
+    'The winner of each week will receive points added to their total for the regular season',
+    '18Birdies will track handicaps and be the source of truth for net scoring',
+  ], subBullets: [
+    'Weekly winners: 1st (4 pts), 2nd (2 pts), 3rd (1 pt)',
+    'Seneca Open: 1st (6), 2nd (5), 3rd (4), 4th (3), 5th (2), 6th (1), 7th & 8th (0)',
+    'End of season strokes (does not affect handicaps): 1st (4), 2nd (2), 3rd (1)',
+  ]},
+  { id: 5, title: 'Walking', category: 'League Overview', bullets: [
+    'This is a walking league. It does not matter if you dropped acid the night before and did not get any sleep and show up to the course still drunk - you must walk',
+    'Any real reason for not walking (injury) can be approved by the other members of your group',
+  ]},
+  { id: 6, title: 'Makeup Rounds', category: 'League Overview', bullets: [
+    'If you miss a week with your group, you have 2 weeks to make up the round with anyone in the AM league',
+    'You can also play ahead of the week',
+    'Needs to be the same tee and the other member must sign off on the legit score',
+  ]},
+  { id: 7, title: '18Birdies', category: 'League Overview', bullets: [
+    'Must have a handicap in 18Birdies to start or your group can decide on a manual one to begin with',
+    'We will use 18Birdies for consistent handicap tracking and following scores',
+    'Members must use 18Birdies in real-time so scores are all on one scorecard',
+  ]},
+  { id: 8, title: 'Membership Dues & Payouts', category: 'League Overview', bullets: [
+    'Dues are $150 per Member',
+    "Members must pay 100% of their dues before they tee off Week 1. If they tee off without paying, they will be DQ'd for said round until fully paid",
+  ], subBullets: [
+    '1st Place: $900',
+    '2nd Place: $300',
+    '3rd Place: $100',
+    'Gross Winner: $100',
+    'Seneca Open: $200 (split between 2)',
+    'Regular Season: $140 each group',
+    'Weekly Winner: $20 each week',
+  ]},
+  { id: 9, title: 'Birdie Pot', category: 'League Overview', bullets: [
+    'For every birdie a member scores, every member will add $0.50 to a birdie pot',
+    'Applies during the regular season, Seneca Open, and Championship Weekend',
+    'Last person to card a birdie throughout the season receives 50% of the pot',
+    'Member with the most birdies for the year receives the other 50%',
+    'Tracking will be on the leaderboard',
+  ]},
 
   // GOLF RULES
-  { id: 10, title: 'Get Approvals', category: 'Golf Rules', content: 'When in doubt, ask one other person for approval. This rule is applied to gimmies, ball replacements and anything else not outlined below.' },
-  { id: 11, title: 'Breakfast Buffet', category: 'Golf Rules', content: 'If your first drive is not in the fairway, each player is allowed to hit a 2nd shot on the first tee and choose which ball they want to use. Because you might be teeing off at 6am, your first swing may be a little tight. Please be mindful of the pace in the beginning. 1st swing only.' },
-  { id: 12, title: 'Gimmies', category: 'Golf Rules', content: 'Gimmies are allowed as long as 1 other person approves the pick-up. No gimmies for pars or birdies - does not matter if someone says pick up. For the Seneca Open and Championship Weekend, there are no gimmies for birdies, pars, or bogeys.' },
-  { id: 13, title: 'No White Stakes', category: 'Golf Rules', content: 'Each OOB can be played as a red stake. This means you can either drop 2 club lengths from where the ball went out OR you get a line from your previous shot to where the ball went OOB. Ball should never be progressed further to where the ball went.' },
-  { id: 14, title: 'Bumping / Plugged Balls / Wet Sandtraps', category: 'Golf Rules', content: 'There is no bumping or ball movement if the ball is in a hazard (red stakes, white stakes, water). Bumping is ok as long as your line is not improved and you stay on the same cut of grass. Think 2in radius for moving the ball back and forth. If you need to move your ball more, you must get approval from 1 other person. You cannot progress the ball and you cannot improve your line. If you are in standing water or a mud pit in a sandtrap, you must ask for approval to rake and drop somewhere in the trap. The ball must be played in the trap still.' },
-  { id: 15, title: 'Gentleman Drops', category: 'Golf Rules', content: 'If you cannot find your ball, you must have unanimous approval by the group to get a free drop. We are playing early in the morning and the sun can blind us so we need to stay flexible. If not unanimous, you must drop with 1 stroke penalty.' },
-  { id: 16, title: 'Tie Breakers & Putt-Offs', category: 'Golf Rules', content: 'Members with a tie will split the total points available. Example: Member A and Member B tied for 1st place during the regular season - they would each get 3 points (6 total pts divided by 2). If there is a tie after the Seneca Open or the Championship, a putt-off will take place: 1) Throw a tee - winner selects to go first or second, 2) Whoever goes 1st selects the shot, 3) 3 alternative putts, marking the closest putt, 4) Winner is whoever is closer after all putts.' },
-  { id: 17, title: 'Concedes', category: 'Golf Rules', content: 'Pick up your ball once you are +4 for the hole to keep things moving. You can also pick up at any time to automatically get a +4. This helps with the pace of play if you are struggling.' },
-  { id: 18, title: 'Late To Your Round', category: 'Golf Rules', content: 'If you are late to your round, you will concede (+4) any holes you missed. Groups should also try and delay the start by letting others go first to minimize any missed holes.' },
-  { id: 19, title: 'Incorrect Scores in 18Birdies', category: 'Golf Rules', content: "If a Member inputs the incorrect score for a hole into 18Birdies and starts to play the next hole, it is a 2 stroke penalty and a warning. If a Member inputs the wrong score three times during the season, they will be DQ'd for the round (3 strikes you're out rule). If you are unsure of your score, please ask the other Members for confirmation before inputting." },
-  { id: 20, title: 'The Faro Rule (No Cheating)', category: 'Golf Rules', content: 'No training aids, foreign substances or non-PGA-approved equipment should be used during the round. This is not a practice round but league play. Any illegal equipment can result in an auto DQ for the round and future penalties if deemed necessary.' },
+  { id: 10, title: 'Get Approvals', category: 'Golf Rules', bullets: [
+    'When in doubt, ask one other person for approval',
+    'This rule is applied to gimmies, ball replacements and anything else not outlined below',
+  ]},
+  { id: 11, title: 'Breakfast Buffet', category: 'Golf Rules', bullets: [
+    'If your first drive is not in the fairway, each player is allowed to hit a 2nd shot on the first tee and choose which ball they want to use',
+    'Because you might be teeing off at 6am, your first swing may be a little tight',
+    'Please be mindful of the pace in the beginning',
+    '1st swing only',
+  ]},
+  { id: 12, title: 'Gimmies', category: 'Golf Rules', bullets: [
+    'Gimmies are allowed as long as 1 other person approves the pick-up',
+    'No gimmies for pars or birdies - does not matter if someone says pick up',
+    'Seneca Open and Championship Weekend: no gimmies for birdies, pars, or bogeys',
+  ]},
+  { id: 13, title: 'No White Stakes', category: 'Golf Rules', bullets: [
+    'Each OOB can be played as a red stake',
+    'Drop 2 club lengths from where the ball went out, OR get a line from your previous shot to where the ball went OOB',
+    'Ball should never be progressed further to where the ball went',
+  ]},
+  { id: 14, title: 'Bumping / Plugged Balls / Wet Sandtraps', category: 'Golf Rules', bullets: [
+    'No bumping or ball movement if the ball is in a hazard (red stakes, white stakes, water)',
+    'Bumping is ok as long as your line is not improved and you stay on the same cut of grass (think 2in radius)',
+    'If you need to move your ball more, you must get approval from 1 other person',
+    'You cannot progress the ball and you cannot improve your line',
+    'Standing water or mud pit in a sandtrap: ask for approval to rake and drop somewhere in the trap. The ball must be played in the trap still',
+  ]},
+  { id: 15, title: 'Gentleman Drops', category: 'Golf Rules', bullets: [
+    'If you cannot find your ball, you must have unanimous approval by the group to get a free drop',
+    'We are playing early in the morning and the sun can blind us so we need to stay flexible',
+    'If not unanimous, you must drop with 1 stroke penalty',
+  ]},
+  { id: 16, title: 'Tie Breakers & Putt-Offs', category: 'Golf Rules', bullets: [
+    'Members with a tie will split the total points available',
+    'Example: Member A and Member B tied for 1st place - they would each get 3 points (6 total pts divided by 2)',
+    'If there is a tie after the Seneca Open or the Championship, a putt-off will take place:',
+  ], subBullets: [
+    'Throw a tee - winner selects to go first or second',
+    'Whoever goes 1st selects the shot',
+    '3 alternative putts, marking the closest putt',
+    'Winner is whoever is closer after all putts',
+  ]},
+  { id: 17, title: 'Concedes', category: 'Golf Rules', bullets: [
+    'Pick up your ball once you are +4 for the hole to keep things moving',
+    'You can also pick up at any time to automatically get a +4',
+    'This helps with the pace of play if you are struggling',
+  ]},
+  { id: 18, title: 'Late To Your Round', category: 'Golf Rules', bullets: [
+    'If you are late to your round, you will concede (+4) any holes you missed',
+    'Groups should also try and delay the start by letting others go first to minimize any missed holes',
+  ]},
+  { id: 19, title: 'Incorrect Scores in 18Birdies', category: 'Golf Rules', bullets: [
+    'If a Member inputs the incorrect score for a hole into 18Birdies and starts to play the next hole, it is a 2 stroke penalty and a warning',
+    "If a Member inputs the wrong score three times during the season, they will be DQ'd for the round (3 strikes you're out rule)",
+    'If you are unsure of your score, please ask the other Members for confirmation before inputting',
+  ]},
+  { id: 20, title: 'The Faro Rule (No Cheating)', category: 'Golf Rules', bullets: [
+    'No training aids, foreign substances or non-PGA-approved equipment should be used during the round',
+    'This is not a practice round but league play',
+    'Any illegal equipment can result in an auto DQ for the round and future penalties if deemed necessary',
+  ]},
 ];
 
 // Historical championship and Seneca Open results
@@ -304,7 +546,7 @@ const historicalData = {
         { place: 2, name: 'Joe Fitch', score: '-2' },
         { place: 3, name: 'James Stephens', score: '+1' },
         { place: 4, name: 'Jake Taylor', score: '+1' },
-        { place: 5, name: 'Nick Carpenter', score: '+2', note: 'DNF last 18' },
+        { place: 5, name: 'Nick Carpenter', score: '+2' },
         { place: 6, name: 'Richie Baker', score: '+5' },
         { place: 7, name: 'Joe Andulics', score: '+7' },
         { place: 8, name: 'Chuck Martin', score: '+11' },
@@ -345,7 +587,7 @@ const historicalData = {
         { place: 1, name: 'Joe Fitch & Jon Faro', score: '+3' },
         { place: 'T2', name: "Josh Houser & Ian O'Neil", score: '+4' },
         { place: 'T2', name: 'Sean Housel & Jared Fritz', score: '+4' },
-        { place: 4, name: 'James Stephens & Jack Taylor', score: '+5' },
+        { place: 4, name: 'James Stephens & Jake Taylor', score: '+5' },
         { place: 5, name: 'Glen Morrison & Nick Carpenter', score: '+8' },
         { place: 6, name: 'Chuck Martin & Kevin Fentner', score: '+10' },
         { place: 7, name: 'Chad Supers & Joey Andulics', score: '+18' },
@@ -371,25 +613,7 @@ const historicalData = {
   ],
 };
 
-// Player analytics data
-const analyticsData = [
-  { player: 'Chuck', totalGross: 503, avgGross: 45.7, totalNet: 419, avgNet: 38.1, avgPts: 1.9, avgHdcp: 14.8, birdies: 7, missedWeeks: 0 },
-  { player: 'Chad', totalGross: 480, avgGross: 43.6, totalNet: 417, avgNet: 37.9, avgPts: 2.5, avgHdcp: 11.1, birdies: 11, missedWeeks: 0 },
-  { player: 'Carp', totalGross: 492, avgGross: 44.7, totalNet: 416, avgNet: 37.8, avgPts: 2.2, avgHdcp: 13.2, birdies: 10, missedWeeks: 0 },
-  { player: 'Glen', totalGross: 392, avgGross: 49.0, totalNet: 333, avgNet: 41.6, avgPts: 0.4, avgHdcp: 14.3, birdies: 3, missedWeeks: 3 },
-  { player: 'Sean', totalGross: 426, avgGross: 42.6, totalNet: 366, avgNet: 36.6, avgPts: 2.1, avgHdcp: 11.2, birdies: 13, missedWeeks: 0 },
-  { player: 'Jake', totalGross: 447, avgGross: 44.7, totalNet: 369, avgNet: 36.9, avgPts: 2.3, avgHdcp: 15.2, birdies: 5, missedWeeks: 0 },
-  { player: 'Jimmy', totalGross: 393, avgGross: 43.7, totalNet: 338, avgNet: 37.6, avgPts: 1.4, avgHdcp: 11.6, birdies: 3, missedWeeks: 1 },
-  { player: 'Faro', totalGross: 470, avgGross: 52.2, totalNet: 354, avgNet: 39.3, avgPts: 0.5, avgHdcp: 25.2, birdies: 1, missedWeeks: 1 },
-  { player: 'Joey', totalGross: 298, avgGross: 42.6, totalNet: 264, avgNet: 37.7, avgPts: 1.5, avgHdcp: 9.6, birdies: 9, missedWeeks: 4 },
-  { player: 'Kevin', totalGross: 417, avgGross: 46.3, totalNet: 353, avgNet: 39.2, avgPts: 1.6, avgHdcp: 13.6, birdies: 1, missedWeeks: 2 },
-  { player: 'Baker', totalGross: 300, avgGross: 42.9, totalNet: 267, avgNet: 38.1, avgPts: 1.6, avgHdcp: 8.9, birdies: 2, missedWeeks: 4 },
-  { player: 'Andulics', totalGross: 415, avgGross: 51.9, totalNet: 342, avgNet: 42.8, avgPts: 0.6, avgHdcp: 18.4, birdies: 0, missedWeeks: 3 },
-  { player: 'Tony', totalGross: 493, avgGross: 44.8, totalNet: 403, avgNet: 36.6, avgPts: 2.3, avgHdcp: 16.1, birdies: 3, missedWeeks: 1 },
-  { player: 'Josh', totalGross: 418, avgGross: 41.8, totalNet: 380, avgNet: 38.0, avgPts: 1.4, avgHdcp: 7.5, birdies: 8, missedWeeks: 1 },
-  { player: 'Jared', totalGross: 503, avgGross: 45.7, totalNet: 417, avgNet: 37.9, avgPts: 1.8, avgHdcp: 15.1, birdies: 3, missedWeeks: 0 },
-  { player: 'Ian', totalGross: 548, avgGross: 49.8, totalNet: 417, avgNet: 37.9, avgPts: 1.5, avgHdcp: 25.0, birdies: 1, missedWeeks: 0 },
-];
+// Player analytics data - now fetched from Google Sheets (see AnalyticsTab component)
 
 // =============================================================================
 // ICONS
@@ -448,12 +672,7 @@ const SplashScreen = ({ onComplete }) => {
     }}>
       {/* Sun/Star Logo */}
       <div style={{ animation: 'pulse 2s ease-in-out infinite' }}>
-        <svg width="120" height="120" viewBox="0 0 120 120">
-          <polygon
-            points="60,5 70,35 100,25 82,50 115,60 82,70 100,95 70,85 60,115 50,85 20,95 38,70 5,60 38,50 20,25 50,35"
-            fill={colors.yellow}
-          />
-        </svg>
+        <SunLogo size={120} />
       </div>
 
       {/* League Name */}
@@ -604,29 +823,39 @@ const LeaderboardTab = () => {
       {/* Stats Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 12,
+        gridTemplateColumns: '1fr 1fr 1fr',
+        gap: 10,
         marginBottom: 20,
       }}>
         <div style={{
           background: colors.offWhite,
           borderRadius: 16,
-          padding: 16,
+          padding: 14,
           border: `2px solid ${colors.green}`,
         }}>
-          <p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Birdie Leader</p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: colors.greenDark, fontFamily: '"Source Sans 3", system-ui' }}>{leagueStats?.birdieLeader?.name || '--'}</p>
-          <p style={{ fontSize: 24, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{leagueStats?.birdieLeader?.count || 0}</p>
+          <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Birdie Leader</p>
+          <p style={{ fontSize: 14, fontWeight: 700, color: colors.greenDark, fontFamily: '"Source Sans 3", system-ui' }}>{leagueStats?.birdieLeader?.name || '--'}</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{leagueStats?.birdieLeader?.count || 0}</p>
         </div>
         <div style={{
           background: colors.offWhite,
           borderRadius: 16,
-          padding: 16,
+          padding: 14,
           border: `2px solid ${colors.green}`,
         }}>
-          <p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>League Birdies</p>
-          <p style={{ fontSize: 36, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{leagueStats?.totalBirdies || 0}</p>
-          <p style={{ fontSize: 12, color: colors.green }}>This Season</p>
+          <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>League Birdies</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{leagueStats?.totalBirdies || 0}</p>
+          <p style={{ fontSize: 11, color: colors.green }}>This Season</p>
+        </div>
+        <div style={{
+          background: colors.offWhite,
+          borderRadius: 16,
+          padding: 14,
+          border: `2px solid ${colors.green}`,
+        }}>
+          <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Pot Total</p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>${(leagueStats?.totalBirdies || 0) * 8}</p>
+          <p style={{ fontSize: 11, color: colors.green }}>$0.50 Per Birdie</p>
         </div>
       </div>
 
@@ -1220,9 +1449,8 @@ const RulesTab = () => {
   const [activeCategory, setActiveCategory] = useState(null);
 
   const filteredRules = rulesData.filter(rule => {
-    const matchesSearch = rule.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      rule.category.toLowerCase().includes(searchQuery.toLowerCase());
+    const allText = [rule.title, rule.category, ...(rule.bullets || []), ...(rule.subBullets || [])].join(' ').toLowerCase();
+    const matchesSearch = allText.includes(searchQuery.toLowerCase());
     const matchesCategory = !activeCategory || rule.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
@@ -1360,14 +1588,38 @@ const RulesTab = () => {
               }}>{rule.category}</p>
             </div>
           </div>
-          <p style={{
-            color: colors.textDark,
-            fontSize: 14,
-            lineHeight: 1.6,
-            paddingLeft: 48,
-          }}>
-            {rule.content}
-          </p>
+          <div style={{ paddingLeft: 48 }}>
+            <ul style={{
+              margin: 0,
+              paddingLeft: 18,
+              listStyleType: 'disc',
+            }}>
+              {(rule.bullets || []).map((bullet, i) => (
+                <li key={i} style={{
+                  color: colors.textDark,
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  marginBottom: 6,
+                }}>{bullet}</li>
+              ))}
+            </ul>
+            {rule.subBullets && (
+              <ul style={{
+                margin: '4px 0 0 0',
+                paddingLeft: 36,
+                listStyleType: 'circle',
+              }}>
+                {rule.subBullets.map((sub, i) => (
+                  <li key={i} style={{
+                    color: colors.textMuted,
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                    marginBottom: 4,
+                  }}>{sub}</li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       ))}
 
@@ -1728,8 +1980,35 @@ const HistoryTab = () => {
 // ANALYTICS TAB
 // =============================================================================
 const AnalyticsTab = () => {
+  const [analyticsData, setAnalyticsData] = useState([]);
+  const [lowestNetRecord, setLowestNetRecord] = useState(null);
+  const [lowestGrossRecord, setLowestGrossRecord] = useState(null);
+  const [mostBirdiesRecord, setMostBirdiesRecord] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState('avgNet');
   const [sortDir, setSortDir] = useState('asc');
+
+  // Fetch stats from Google Sheets on component mount
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch(SHEETS_URLS.stats);
+        const csvText = await response.text();
+        const parsedStats = parseStatsCSV(csvText);
+        setAnalyticsData(parsedStats.players);
+        setLowestNetRecord(parsedStats.lowestNetRecord);
+        setLowestGrossRecord(parsedStats.lowestGrossRecord);
+        setMostBirdiesRecord(parsedStats.mostBirdiesRecord);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+        setError('Unable to load stats');
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const sortedData = [...analyticsData].sort((a, b) => {
     const valA = a[sortBy];
@@ -1749,11 +2028,6 @@ const AnalyticsTab = () => {
     }
   };
 
-  // Calculate league stats
-  const totalBirdies = analyticsData.reduce((sum, p) => sum + p.birdies, 0);
-  const lowestNet = analyticsData.reduce((min, p) => p.avgNet < min.avgNet ? p : min, analyticsData[0]);
-  const highestNet = analyticsData.reduce((max, p) => p.avgNet > max.avgNet ? p : max, analyticsData[0]);
-
   const columns = [
     { key: 'avgNet', label: 'Net', shortLabel: 'Net' },
     { key: 'avgGross', label: 'Gross', shortLabel: 'Grs' },
@@ -1761,6 +2035,41 @@ const AnalyticsTab = () => {
     { key: 'birdies', label: 'Birdies', shortLabel: 'Brd' },
     { key: 'missedWeeks', label: 'Missed', shortLabel: 'Miss' },
   ];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 8,
+              height: 8,
+              borderRadius: '50%',
+              background: colors.green,
+              animation: `bounce 1.4s ease-in-out ${i * 0.16}s infinite`,
+            }} />
+          ))}
+        </div>
+        <p style={{ color: colors.textMuted }}>Loading stats...</p>
+        <style>{`
+          @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-8px); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || analyticsData.length === 0) {
+    return (
+      <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+        <p style={{ color: colors.textMuted }}>{error || 'No stats available'}</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '0 16px 100px' }}>
@@ -1777,8 +2086,9 @@ const AnalyticsTab = () => {
           padding: 12,
           textAlign: 'center',
         }}>
-          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>Total Birdies</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{totalBirdies}</p>
+          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>Most Birdies</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{mostBirdiesRecord?.player || '--'}</p>
+          <p style={{ fontSize: 11, color: colors.offWhiteMuted }}>({mostBirdiesRecord?.score || '--'})</p>
         </div>
         <div style={{
           background: colors.green,
@@ -1786,9 +2096,9 @@ const AnalyticsTab = () => {
           padding: 12,
           textAlign: 'center',
         }}>
-          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>Best Avg Net</p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{lowestNet.player}</p>
-          <p style={{ fontSize: 11, color: colors.offWhiteMuted }}>({lowestNet.avgNet})</p>
+          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>Lowest Net</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{lowestNetRecord?.player || '--'}</p>
+          <p style={{ fontSize: 11, color: colors.offWhiteMuted }}>({lowestNetRecord?.score || '--'})</p>
         </div>
         <div style={{
           background: colors.green,
@@ -1796,9 +2106,9 @@ const AnalyticsTab = () => {
           padding: 12,
           textAlign: 'center',
         }}>
-          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>High Avg Net</p>
-          <p style={{ fontSize: 16, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{highestNet.player}</p>
-          <p style={{ fontSize: 11, color: colors.offWhiteMuted }}>({highestNet.avgNet})</p>
+          <p style={{ fontSize: 10, color: colors.offWhiteMuted, textTransform: 'uppercase' }}>Lowest Gross</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{lowestGrossRecord?.player || '--'}</p>
+          <p style={{ fontSize: 11, color: colors.offWhiteMuted }}>({lowestGrossRecord?.score || '--'})</p>
         </div>
       </div>
 
@@ -2021,7 +2331,10 @@ export default function GolfLeagueApp() {
     }}>
       {/* Header */}
       <div style={{
-        padding: '16px 20px 20px',
+        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 12px)',
+        paddingBottom: 20,
+        paddingLeft: 20,
+        paddingRight: 20,
         background: colors.green,
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
@@ -2046,12 +2359,7 @@ export default function GolfLeagueApp() {
           }}>AM WALKING LEAGUE</p>
         </div>
         {/* AWL Sun Logo */}
-        <svg width="40" height="40" viewBox="0 0 120 120">
-          <polygon
-            points="60,5 70,35 100,25 82,50 115,60 82,70 100,95 70,85 60,115 50,85 20,95 38,70 5,60 38,50 20,25 50,35"
-            fill={colors.yellow}
-          />
-        </svg>
+        <SunLogo size={40} />
       </div>
 
       {/* Content */}
@@ -2079,7 +2387,8 @@ export default function GolfLeagueApp() {
             style={{
               background: 'none',
               border: 'none',
-              padding: '8px 12px',
+              padding: '8px 0',
+              flex: 1,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
