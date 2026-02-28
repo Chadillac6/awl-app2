@@ -406,8 +406,8 @@ const rulesData = [
   ]},
   { id: 3, title: 'Championship Weekend', category: 'League Overview', bullets: [
     "Aug 8th & 9th - Championship weekend will be played together and finish with an awards ceremony at Chad's house on Sunday afternoon (members' wives and families are welcome)",
-    'Saturday at Manakiki (18 holes)',
-    'Sunday at Sleepy Hollow (18 holes)',
+    'Saturday at Shawnee Hills (18 holes)',
+    'Sunday at Shale Creek (18 holes)',
     'The winner of championship weekend is the winner of the entire league',
   ]},
   { id: 4, title: 'Scores', category: 'League Overview', bullets: [
