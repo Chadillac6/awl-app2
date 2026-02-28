@@ -915,7 +915,8 @@ const LeaderboardTab = () => {
                     gridTemplateColumns: gridTemplate,
                     padding: '8px 8px',
                     borderBottom: `1px solid ${colors.offWhiteMuted}`,
-                    background: idx % 2 === 0 ? 'white' : colors.offWhite,
+                    background: idx === 0 ? 'rgba(217, 180, 74, 0.12)' : idx === 1 ? 'rgba(192, 192, 192, 0.10)' : idx === 2 ? 'rgba(205, 127, 50, 0.08)' : idx % 2 === 0 ? 'white' : colors.offWhite,
+                    borderLeft: idx === 0 ? `4px solid ${colors.yellow}` : idx === 1 ? '4px solid #C0C0C0' : idx === 2 ? '4px solid #CD7F32' : '4px solid transparent',
                     alignItems: 'center',
                   }}>
                     <div style={{
@@ -930,8 +931,8 @@ const LeaderboardTab = () => {
                       fontWeight: 700,
                       color: colors.greenDark,
                     }}>{player.rank}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: colors.greenDark }}>{player.name}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: colors.green, textAlign: 'center' }}>{player.total}</div>
+                    <div style={{ fontSize: idx === 0 ? 13 : 12, fontWeight: idx === 0 ? 700 : 600, color: colors.greenDark }}>{player.name}</div>
+                    <div style={{ fontSize: idx === 0 ? 16 : 14, fontWeight: 700, color: idx === 0 ? colors.yellow : colors.green, textAlign: 'center' }}>{player.total}</div>
                     {player.weeks.map((pts, i) => (
                       <div key={i} style={{
                         fontSize: 11,
@@ -1098,14 +1099,23 @@ const ScheduleTab = () => {
           }}>&#9971;</div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
             <div>
-              <p style={{
-                fontSize: 11,
-                color: colors.greenDark,
-                textTransform: 'uppercase',
-                letterSpacing: 2,
-                fontWeight: 600,
-                marginBottom: 4,
-              }}>Next Round</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <div style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: colors.green,
+                  animation: 'livePulse 1.5s ease-in-out infinite',
+                  flexShrink: 0,
+                }} />
+                <p style={{
+                  fontSize: 11,
+                  color: colors.greenDark,
+                  textTransform: 'uppercase',
+                  letterSpacing: 2,
+                  fontWeight: 600,
+                }}>Next Round</p>
+              </div>
               <p style={{ fontSize: 14, color: colors.green, fontWeight: 500 }}>
                 {formatDateLong(upcomingGames[0]?.date)}
               </p>
@@ -1373,7 +1383,7 @@ const ScheduleTab = () => {
               borderRadius: 12,
               marginBottom: 10,
               overflow: 'hidden',
-              opacity: 0.85,
+              opacity: 0.55,
             }}>
               <div style={{
                 display: 'flex',
@@ -2287,6 +2297,7 @@ const AnalyticsTab = () => {
 export default function GolfLeagueApp() {
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState('leaderboard');
+  const [tabAnimKey, setTabAnimKey] = useState(0);
 
   const tabs = [
     { id: 'leaderboard', label: 'Leaderboard', icon: Icons.leaderboard },
@@ -2363,7 +2374,7 @@ export default function GolfLeagueApp() {
       </div>
 
       {/* Content */}
-      <div style={{ paddingTop: 20 }}>
+      <div key={tabAnimKey} style={{ paddingTop: 20, animation: 'tabFadeIn 0.22s ease-out' }}>
         {renderTab()}
       </div>
 
@@ -2383,11 +2394,12 @@ export default function GolfLeagueApp() {
         {tabs.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => { setActiveTab(tab.id); setTabAnimKey(k => k + 1); }}
             style={{
-              background: 'none',
+              background: activeTab === tab.id ? 'rgba(217, 180, 74, 0.18)' : 'none',
               border: 'none',
-              padding: '8px 0',
+              borderRadius: 14,
+              padding: '8px 4px',
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -2396,6 +2408,7 @@ export default function GolfLeagueApp() {
               cursor: 'pointer',
               color: activeTab === tab.id ? colors.yellow : colors.offWhiteMuted,
               transition: 'all 0.2s ease',
+              margin: '0 4px',
             }}
           >
             <div style={{
@@ -2406,18 +2419,9 @@ export default function GolfLeagueApp() {
             </div>
             <span style={{
               fontSize: 10,
-              fontWeight: activeTab === tab.id ? 600 : 400,
+              fontWeight: activeTab === tab.id ? 700 : 400,
               letterSpacing: 0.5,
             }}>{tab.label}</span>
-            {activeTab === tab.id && (
-              <div style={{
-                width: 4,
-                height: 4,
-                borderRadius: '50%',
-                background: colors.yellow,
-                marginTop: -2,
-              }} />
-            )}
           </button>
         ))}
       </div>
@@ -2439,6 +2443,16 @@ export default function GolfLeagueApp() {
         @keyframes bounce {
           0%, 80%, 100% { transform: translateY(0); }
           40% { transform: translateY(-8px); }
+        }
+
+        @keyframes tabFadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes livePulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.6; }
         }
 
         * {
