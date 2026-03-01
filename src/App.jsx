@@ -1682,12 +1682,12 @@ const HistoryTab = () => {
         {champPhotos[currentChamp.year] && (
           <img
             src={champPhotos[currentChamp.year]}
-            objectPosition={champPhotoPositions[currentChamp.year] || '25%'}
             alt={`${currentChamp.year} Champions`}
             style={{
               width: '100%',
               height: 220,
               objectFit: 'cover',
+              objectPosition: champPhotoPositions[currentChamp.year] || '25%',
               display: 'block',
             }}
           />
@@ -1865,12 +1865,12 @@ const HistoryTab = () => {
               {champPhotos[champ.year] && (
                 <img
                   src={champPhotos[champ.year]}
-                  objectPosition={champPhotoPositions[champ.year] || '25%'}
                   alt={`${champ.year} Champions`}
                   style={{
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
+                    objectPosition: champPhotoPositions[champ.year] || '25%',
                     display: 'block',
                   }}
                 />
@@ -1991,12 +1991,12 @@ const HistoryTab = () => {
               {senecaPhotos[seneca.year] && (
                 <img
                   src={senecaPhotos[seneca.year]}
-                  objectPosition={senecaPhotoPositions[seneca.year] || '30%'}
                   alt={`${seneca.year} Seneca Open`}
                   style={{
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
+                    objectPosition: senecaPhotoPositions[seneca.year] || '30%',
                     display: 'block',
                   }}
                 />
