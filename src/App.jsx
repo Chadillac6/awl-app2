@@ -1647,8 +1647,17 @@ const champPhotos = {
   2024: '/championship2024.jpg',
   2025: '/championship2025.jpeg',
 };
+const champPhotoPositions = {
+  2022: '20%',
+  2023: '30%',
+  2024: '20%',
+  2025: '25%',
+};
 const senecaPhotos = {
   2025: '/seneca2025.jpeg',
+};
+const senecaPhotoPositions = {
+  2025: '30%',
 };
 
 const HistoryTab = () => {
@@ -1673,12 +1682,12 @@ const HistoryTab = () => {
         {champPhotos[currentChamp.year] && (
           <img
             src={champPhotos[currentChamp.year]}
+            objectPosition={champPhotoPositions[currentChamp.year] || '25%'}
             alt={`${currentChamp.year} Champions`}
             style={{
               width: '100%',
               height: 220,
               objectFit: 'cover',
-              objectPosition: 'top',
               display: 'block',
             }}
           />
@@ -1856,12 +1865,12 @@ const HistoryTab = () => {
               {champPhotos[champ.year] && (
                 <img
                   src={champPhotos[champ.year]}
+                  objectPosition={champPhotoPositions[champ.year] || '25%'}
                   alt={`${champ.year} Champions`}
                   style={{
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
-              objectPosition: 'top',
                     display: 'block',
                   }}
                 />
@@ -1982,12 +1991,12 @@ const HistoryTab = () => {
               {senecaPhotos[seneca.year] && (
                 <img
                   src={senecaPhotos[seneca.year]}
+                  objectPosition={senecaPhotoPositions[seneca.year] || '30%'}
                   alt={`${seneca.year} Seneca Open`}
                   style={{
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
-              objectPosition: 'top',
                     display: 'block',
                   }}
                 />
