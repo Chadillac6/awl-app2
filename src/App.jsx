@@ -1640,6 +1640,17 @@ const RulesTab = () => {
 // =============================================================================
 // HISTORY TAB
 // =============================================================================
+// Map championship years to photo paths
+const champPhotos = {
+  2022: '/championship2022.jpg',
+  2023: '/championship2023.jpg',
+  2024: '/championship2024.jpg',
+  2025: '/championship2025.jpeg',
+};
+const senecaPhotos = {
+  2025: '/seneca2025.jpeg',
+};
+
 const HistoryTab = () => {
   const [expandedYear, setExpandedYear] = useState(null);
   const [expandedSeneca, setExpandedSeneca] = useState(null);
@@ -1654,12 +1665,24 @@ const HistoryTab = () => {
       <div style={{
         background: colors.yellow,
         borderRadius: 20,
-        padding: 24,
-        textAlign: 'center',
+        overflow: 'hidden',
         marginBottom: 24,
         position: 'relative',
-        overflow: 'hidden',
       }}>
+        {/* Championship Photo */}
+        {champPhotos[currentChamp.year] && (
+          <img
+            src={champPhotos[currentChamp.year]}
+            alt={`${currentChamp.year} Champions`}
+            style={{
+              width: '100%',
+              height: 220,
+              objectFit: 'cover',
+              display: 'block',
+            }}
+          />
+        )}
+        <div style={{ padding: 24, textAlign: 'center', position: 'relative' }}>
         <div style={{
           position: 'absolute',
           inset: 0,
@@ -1761,6 +1784,7 @@ const HistoryTab = () => {
             ))}
           </div>
         )}
+        </div>{/* end padding div */}
       </div>
 
       {/* Past Champions */}
@@ -1826,9 +1850,21 @@ const HistoryTab = () => {
           {/* Expanded Results */}
           {expandedYear === champ.year && (
             <div style={{
-              padding: '0 16px 16px',
               borderTop: `1px solid ${colors.offWhiteMuted}`,
             }}>
+              {champPhotos[champ.year] && (
+                <img
+                  src={champPhotos[champ.year]}
+                  alt={`${champ.year} Champions`}
+                  style={{
+                    width: '100%',
+                    height: 200,
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              )}
+              <div style={{ padding: '0 16px 16px' }}>
               <p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '12px 0 8px', fontWeight: 600 }}>Full Results</p>
               {champ.results.map((player, idx) => (
                 <div key={player.name} style={{
@@ -1859,6 +1895,7 @@ const HistoryTab = () => {
                   <span style={{ fontSize: 14, fontWeight: 600, color: colors.green }}>{player.score}</span>
                 </div>
               ))}
+              </div>{/* end inner padding div */}
             </div>
           )}
         </div>
@@ -1938,9 +1975,21 @@ const HistoryTab = () => {
           {/* Expanded Results */}
           {expandedSeneca === seneca.year && (
             <div style={{
-              padding: '0 16px 16px',
               borderTop: `1px solid ${colors.offWhiteMuted}`,
             }}>
+              {senecaPhotos[seneca.year] && (
+                <img
+                  src={senecaPhotos[seneca.year]}
+                  alt={`${seneca.year} Seneca Open`}
+                  style={{
+                    width: '100%',
+                    height: 200,
+                    objectFit: 'cover',
+                    display: 'block',
+                  }}
+                />
+              )}
+              <div style={{ padding: '0 16px 16px' }}>
               <p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '12px 0 8px', fontWeight: 600 }}>Full Results</p>
               {seneca.results.map((player, idx) => (
                 <div key={player.name} style={{
@@ -1968,6 +2017,7 @@ const HistoryTab = () => {
                   <span style={{ fontSize: 14, fontWeight: 600, color: player.score === 'E' ? colors.green : colors.greenDark }}>{player.score}</span>
                 </div>
               ))}
+              </div>{/* end inner padding div */}
             </div>
           )}
         </div>
