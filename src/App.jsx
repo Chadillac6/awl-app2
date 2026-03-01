@@ -1678,6 +1678,7 @@ const HistoryTab = () => {
               width: '100%',
               height: 220,
               objectFit: 'cover',
+              objectPosition: 'top',
               display: 'block',
             }}
           />
@@ -1860,6 +1861,7 @@ const HistoryTab = () => {
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
+              objectPosition: 'top',
                     display: 'block',
                   }}
                 />
@@ -1985,6 +1987,7 @@ const HistoryTab = () => {
                     width: '100%',
                     height: 200,
                     objectFit: 'cover',
+              objectPosition: 'top',
                     display: 'block',
                   }}
                 />
