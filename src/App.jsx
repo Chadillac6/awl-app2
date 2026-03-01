@@ -1022,7 +1022,6 @@ const ScheduleTab = () => {
 
   const upcomingGames = scheduleData.filter(g => g.status === 'upcoming' && !g.isSpecialEvent);
   const completedGames = scheduleData.filter(g => g.status === 'completed' && !g.isSpecialEvent);
-  const specialEvents = scheduleData.filter(g => g.isSpecialEvent);
 
   // Filter upcoming games based on selection
   const filteredUpcoming = selectedWeek === 'all'
@@ -1648,22 +1647,30 @@ const champPhotos = {
   2025: '/championship2025.jpeg',
 };
 const champPhotoPositions = {
-  2022: '20%',
-  2023: '30%',
-  2024: '20%',
-  2025: '25%',
+  // Single focal point per image so face framing stays consistent on mobile + desktop
+  2022: 'center 29%',
+  2023: 'center 34%',
+  2024: 'center 29%',
+  2025: 'center 31%',
 };
 const senecaPhotos = {
   2025: '/seneca2025.jpeg',
 };
 const senecaPhotoPositions = {
-  2025: '30%',
+  2025: 'center 26%',
 };
 
 const HistoryTab = () => {
   const [expandedYear, setExpandedYear] = useState(null);
   const [expandedSeneca, setExpandedSeneca] = useState(null);
   const [showCurrentChampResults, setShowCurrentChampResults] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const currentChamp = historicalData.championships[0];
   const pastChamps = historicalData.championships.slice(1);
@@ -1683,11 +1690,13 @@ const HistoryTab = () => {
           <img
             src={champPhotos[currentChamp.year]}
             alt={`${currentChamp.year} Champions`}
+            fetchPriority="high"
+            decoding="async"
             style={{
               width: '100%',
-              height: 220,
+              height: isMobile ? 240 : 260,
               objectFit: 'cover',
-              objectPosition: champPhotoPositions[currentChamp.year] || '25%',
+              objectPosition: champPhotoPositions[currentChamp.year] || 'center 30%',
               display: 'block',
             }}
           />
@@ -1866,11 +1875,13 @@ const HistoryTab = () => {
                 <img
                   src={champPhotos[champ.year]}
                   alt={`${champ.year} Champions`}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: '100%',
-                    height: 200,
+                    height: isMobile ? 210 : 240,
                     objectFit: 'cover',
-                    objectPosition: champPhotoPositions[champ.year] || '25%',
+                    objectPosition: champPhotoPositions[champ.year] || 'center 30%',
                     display: 'block',
                   }}
                 />
@@ -1992,11 +2003,13 @@ const HistoryTab = () => {
                 <img
                   src={senecaPhotos[seneca.year]}
                   alt={`${seneca.year} Seneca Open`}
+                  loading="lazy"
+                  decoding="async"
                   style={{
                     width: '100%',
-                    height: 200,
+                    height: isMobile ? 210 : 240,
                     objectFit: 'cover',
-                    objectPosition: senecaPhotoPositions[seneca.year] || '30%',
+                    objectPosition: senecaPhotoPositions[seneca.year] || 'center 30%',
                     display: 'block',
                   }}
                 />
