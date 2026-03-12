@@ -1,11 +1,27 @@
-/* Reset default styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Global viewport + safe-area foundation */
+html {
+  background: #0f7a3f;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
 }
 
 body {
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background: #0f7a3f;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background: #0f7a3f;
+}
+
+* {
+  box-sizing: border-box;
 }
