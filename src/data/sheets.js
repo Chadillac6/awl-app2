@@ -94,8 +94,15 @@ export const parseScheduleCSV = (csvText) => {
   const rows = parseCSV(csvText);
   const schedule = [];
   const currentYear = new Date().getFullYear();
+  const firstScheduleRowIndex = rows.findIndex((row) => {
+    const week = String(row[0] || '').trim();
+    const date = String(row[1] || '').trim();
+    return (week === 'MAJOR' || /^\d+$/.test(week)) && /^\d{1,2}-\d{1,2}$/.test(date);
+  });
 
-  for (let i = 3; i < rows.length; i += 1) {
+  if (firstScheduleRowIndex === -1) return schedule;
+
+  for (let i = firstScheduleRowIndex; i < rows.length; i += 1) {
     const row = rows[i];
     const weekNum = row[0];
     const dateStr = row[1];
