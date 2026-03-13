@@ -214,13 +214,19 @@ export const parseLeaderboardCSV = (csvText) => {
 
     if (row.some((cell) => cell?.includes('Weekly Low:'))) {
       const weeklyLowIdx = row.findIndex((cell) => cell?.includes('Weekly Low:'));
-      const winners = row.slice(weeklyLowIdx + 1).filter((w) => w && w.trim());
-      leagueStats.weeklyLowWinners = winners.slice(-4).map((name, idx) => ({
-        week: weekHeaders.length - 3 + idx,
-        name: name.split('\n')[0],
-        score: '--',
-        payout: '$20',
-      })).reverse();
+      const winnersByWeek = weekHeaders.map((week, idx) => {
+        const rawName = row[weeklyLowIdx + 1 + idx] || '';
+        return {
+          week,
+          rawName,
+          name: rawName.replace(/\n/g, ', ').trim(),
+          names: rawName.split('\n').map((value) => value.trim()).filter(Boolean),
+          score: '--',
+          payout: '$20',
+        };
+      }).filter((entry) => entry.rawName && entry.rawName.trim());
+
+      leagueStats.weeklyLowWinners = winnersByWeek.slice(-4).reverse();
     }
   }
 
