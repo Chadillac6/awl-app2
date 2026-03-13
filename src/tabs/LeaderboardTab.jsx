@@ -72,7 +72,7 @@ export const LeaderboardTab = () => {
                   <p style={{ fontSize: 11, color: colors.green, fontWeight: 700 }}>{winner.payout}</p>
                 </div>
                 <p style={{ fontWeight: 600, color: colors.greenDark, fontSize: 14, lineHeight: 1.35 }}>
-                  {winner.names?.length > 1 ? `TIE: ${winner.name}` : winner.name}
+                  {winner.name}
                 </p>
               </div>
             ))}
