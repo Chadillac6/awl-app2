@@ -33,7 +33,13 @@ export const RulesTab = () => {
             <div style={{ flex: 1 }}><p style={{ fontWeight: 700, color: colors.greenDark, fontSize: 16, marginBottom: 2 }}>{rule.title}</p><p style={{ fontSize: 11, color: rule.category === 'League Overview' ? colors.yellow : colors.green, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{rule.category}</p></div>
           </div>
           <div style={{ paddingLeft: 48 }}>
-            <ul style={{ margin: 0, paddingLeft: 18, listStyleType: 'disc' }}>{(rule.bullets || []).map((bullet, i) => <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{bullet}</li>)}</ul>
+            <ul style={{ margin: 0, paddingLeft: 18, listStyleType: 'disc' }}>{(rule.bullets || []).map((bullet, i) => {
+              if (typeof bullet === 'object' && bullet.highlight) {
+                const [before, after] = bullet.text.split(bullet.highlight);
+                return <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{before}<strong style={{ color: '#cc2200', fontWeight: 700 }}>{bullet.highlight}</strong>{after}</li>;
+              }
+              return <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{bullet}</li>;
+            })}</ul>
             {rule.subBullets && <ul style={{ margin: '4px 0 0 0', paddingLeft: 36, listStyleType: 'circle' }}>{rule.subBullets.map((sub, i) => <li key={i} style={{ color: colors.textMuted, fontSize: 13, lineHeight: 1.5, marginBottom: 4 }}>{sub}</li>)}</ul>}
             {rule.extraBullets && <ul style={{ margin: '6px 0 0 0', paddingLeft: 18, listStyleType: 'disc' }}>{rule.extraBullets.map((bullet, i) => <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{bullet}</li>)}</ul>}
           </div>

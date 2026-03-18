@@ -34,7 +34,7 @@ export const rulesData = [
     'Any real reason for not walking (injury) can be approved by the other members of your group',
   ]},
   { id: 6, title: 'Makeup Rounds', category: 'League Overview', bullets: [
-    'If you miss a week with your group, you have 2 weeks to make up the round with anyone in the AM league',
+    { text: 'If you miss a week with your group, you have 2 weeks to make up the round with anyone in the AM league', highlight: 'you have 2 weeks to make up the round' },
     'You can also play ahead of the week',
     'Needs to be the same tee and the other member must sign off on the legit score',
   ]},
