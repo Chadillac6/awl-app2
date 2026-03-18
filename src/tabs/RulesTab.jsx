@@ -35,6 +35,7 @@ export const RulesTab = () => {
           <div style={{ paddingLeft: 48 }}>
             <ul style={{ margin: 0, paddingLeft: 18, listStyleType: 'disc' }}>{(rule.bullets || []).map((bullet, i) => <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{bullet}</li>)}</ul>
             {rule.subBullets && <ul style={{ margin: '4px 0 0 0', paddingLeft: 36, listStyleType: 'circle' }}>{rule.subBullets.map((sub, i) => <li key={i} style={{ color: colors.textMuted, fontSize: 13, lineHeight: 1.5, marginBottom: 4 }}>{sub}</li>)}</ul>}
+            {rule.extraBullets && <ul style={{ margin: '6px 0 0 0', paddingLeft: 18, listStyleType: 'disc' }}>{rule.extraBullets.map((bullet, i) => <li key={i} style={{ color: colors.textDark, fontSize: 14, lineHeight: 1.6, marginBottom: 6 }}>{bullet}</li>)}</ul>}
           </div>
         </div>
       ))}

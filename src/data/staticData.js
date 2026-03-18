@@ -26,7 +26,8 @@ export const rulesData = [
   ], subBullets: [
     'Weekly winners: 1st (4 pts), 2nd (2 pts), 3rd (1 pt)',
     'Seneca Open: 1st (6), 2nd (5), 3rd (4), 4th (3), 5th (2), 6th (1), 7th & 8th (0)',
-    'End of season strokes (does not affect handicaps): 1st (4), 2nd (2), 3rd (1)',
+  ], extraBullets: [
+    'Winner of each regular season group gains strokes going into Championship Weekend: 1st (4 strokes), 2nd (2 strokes), 3rd (1 stroke), 4th (0 strokes)',
   ]},
   { id: 5, title: 'Walking', category: 'League Overview', bullets: [
     'This is a walking league. It does not matter if you dropped acid the night before and did not get any sleep and show up to the course still drunk - you must walk',
