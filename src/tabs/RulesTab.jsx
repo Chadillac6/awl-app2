@@ -17,7 +17,7 @@ export const RulesTab = () => {
   return (
     <div style={{ padding: '0 16px 100px' }}>
       <div style={{ position: 'relative', marginBottom: 20 }}>
-        <input type="text" placeholder="Search rules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: 14, border: `2px solid ${colors.green}`, background: colors.offWhite, color: colors.greenDark, fontSize: 15, outline: 'none' }} />
+        <input type="text" placeholder="Search rules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: 14, border: `2px solid ${colors.green}`, background: colors.offWhite, color: colors.greenDark, fontSize: 16, outline: 'none' }} />
         <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: 18 }}>&#128269;</span>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>

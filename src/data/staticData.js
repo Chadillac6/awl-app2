@@ -76,7 +76,7 @@ export const rulesData = [
   { id: 12, title: 'Gimmies', category: 'Golf Rules', bullets: [
     'Gimmies are allowed as long as 1 other person approves the pick-up',
     'No gimmies for pars or birdies - does not matter if someone says pick up',
-    'Seneca Open and Championship Weekend: no gimmies for birdies, pars, or bogeys',
+    'The Kevin Rule: no gimmies for birdies, pars or bogeys for Championship Weekend only.',
   ]},
   { id: 13, title: 'No White Stakes', category: 'Golf Rules', bullets: [
     'Each OOB can be played as a red stake',
