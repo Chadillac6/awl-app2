@@ -12,7 +12,7 @@ export const rulesData = [
   ], subBullets: [
     '2-man Scramble (no handicap)',
     'Team Stroke Play (combine net score)',
-    'Alt Shot (no handicap)',
+    'Alt Shot (adjusted team handicap)',
   ]},
   { id: 3, title: 'Championship Weekend', category: 'League Overview', bullets: [
     "Aug 8th & 9th - Championship weekend will be played together and finish with an awards ceremony at Chad's house on Sunday afternoon (members' wives and families are welcome)",
