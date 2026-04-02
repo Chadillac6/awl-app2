@@ -1,7 +1,10 @@
+const SHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub';
+const sheetURL = (gid) => `${SHEET_BASE}?gid=${gid}&single=true&output=csv`;
+
 export const SHEETS_URLS = {
-  schedule: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=900398120&single=true&output=csv',
-  leaderboard: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=483982929&single=true&output=csv',
-  stats: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub?gid=1427498880&single=true&output=csv',
+  schedule: sheetURL('900398120'),
+  leaderboard: sheetURL('483982929'),
+  stats: sheetURL('1427498880'),
 };
 
 export const defaultWeekHeaders = ['1', '2', '3', '4', 'S.O.', '5', '6', '7', '8', '9', '10', '11', '12'];

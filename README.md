@@ -1,16 +1,38 @@
-# React + Vite
+# AM Walking League (AWL)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A mobile-first web app for the AM Walking League, a 14-week summer golf league. Tracks leaderboards, schedules, player stats, league rules, and championship history.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Leaderboard** -- Live standings across four groups with weekly point breakdowns, birdie tracking, and weekly low net winners
+- **Schedule** -- Upcoming and completed rounds with course assignments per group
+- **Player Stats** -- Sortable averages for net, gross, handicap, birdies, and missed weeks
+- **Rules** -- Searchable and filterable league rules reference
+- **Hall of Fame** -- Historical championship and Seneca Open results with photos
 
-## React Compiler
+## Data Source
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Live data is pulled from a published Google Sheets spreadsheet (CSV export) with offline caching via localStorage. The app uses a stale-while-revalidate pattern with automatic retry on failure.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **React 19** with Vite 7
+- No routing library -- tab-based SPA with a bottom navigation bar
+- No component library -- custom UI with inline styles
+- Google Fonts: Playfair Display, Source Sans 3
+
+## Getting Started
+
+```bash
+npm install
+npm run dev
+```
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start local dev server |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | Run ESLint |

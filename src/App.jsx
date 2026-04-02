@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { SplashScreen } from './components/SplashScreen';
 import { AnalyticsTab } from './tabs/AnalyticsTab';
 import { HistoryTab } from './tabs/HistoryTab';
@@ -50,7 +51,7 @@ export default function GolfLeagueApp() {
         <SunLogo size={40} />
       </div>
 
-      <div style={{ paddingTop: 20 }}>{renderTab()}</div>
+      <div style={{ paddingTop: 20 }}><ErrorBoundary key={activeTab}>{renderTab()}</ErrorBoundary></div>
 
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: colors.green, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: '4px 0 calc(6px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'space-around', boxShadow: '0 -6px 18px rgba(10, 92, 46, 0.14)' }}>
         {tabs.map((tab) => (
@@ -63,7 +64,6 @@ export default function GolfLeagueApp() {
       </div>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
         @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } }
