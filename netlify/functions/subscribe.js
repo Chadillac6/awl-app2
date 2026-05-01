@@ -1,4 +1,5 @@
 import { getStore } from "@netlify/blobs";
+import crypto from "crypto";
 
 export default async function handler(req, _context) {
   if (req.method !== 'POST') {
@@ -14,8 +15,7 @@ export default async function handler(req, _context) {
 
     const store = getStore("push-subscriptions");
 
-    // Use a hash of the endpoint as the key to avoid duplicates
-    const key = btoa(subscription.endpoint).replace(/[^a-zA-Z0-9]/g, '').slice(0, 64);
+    const key = crypto.createHash('sha256').update(subscription.endpoint).digest('hex');
 
     await store.set(key, JSON.stringify(subscription));
 
