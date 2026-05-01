@@ -10,8 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.7.4",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

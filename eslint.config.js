@@ -26,4 +26,29 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  {
+    files: ['netlify/functions/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.nodeBuiltin,
+      },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['public/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+      },
+    },
+    rules: {
+      'react-refresh/only-export-components': 'off',
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+    },
+  },
 ])
