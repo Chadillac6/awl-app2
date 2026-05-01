@@ -1,0 +1,20 @@
+{
+  "name": "AM Walking League",
+  "short_name": "AWL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f7a3f",
+  "theme_color": "#0f7a3f",
+  "icons": [
+    {
+      "src": "/sun-icon2.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/sun-icon2.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
