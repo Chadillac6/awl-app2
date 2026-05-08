@@ -1,15 +1,54 @@
 import React, { useMemo, useState } from 'react';
+import Fuse from 'fuse.js';
 import { rulesData } from '../data/staticData';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
+
+const normalizeRuleSearchText = (rule) => {
+  const bulletText = (rule.bullets || []).map((bullet) => (typeof bullet === 'object' ? bullet.text : bullet));
+  return [
+    rule.title,
+    rule.category,
+    ...bulletText,
+    ...(rule.subBullets || []),
+    ...(rule.extraBullets || []),
+  ].join(' ');
+};
 
 export const RulesTab = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const filteredRules = useMemo(() => rulesData.filter((rule) => {
-    const allText = [rule.title, rule.category, ...(rule.bullets || []), ...(rule.subBullets || [])].join(' ').toLowerCase();
-    return allText.includes(searchQuery.toLowerCase()) && (!activeCategory || rule.category === activeCategory);
-  }), [searchQuery, activeCategory]);
+  const searchableRules = useMemo(() => rulesData.map((rule) => ({
+    ...rule,
+    searchText: normalizeRuleSearchText(rule),
+  })), []);
+
+  const fuse = useMemo(() => new Fuse(searchableRules, {
+    includeScore: true,
+    threshold: 0.34,
+    ignoreLocation: true,
+    minMatchCharLength: 2,
+    keys: [
+      { name: 'title', weight: 0.4 },
+      { name: 'category', weight: 0.1 },
+      { name: 'searchText', weight: 0.5 },
+    ],
+  }), [searchableRules]);
+
+  const filteredRules = useMemo(() => {
+    const categoryFilteredRules = activeCategory
+      ? searchableRules.filter((rule) => rule.category === activeCategory)
+      : searchableRules;
+
+    const trimmedQuery = searchQuery.trim();
+    if (!trimmedQuery) {
+      return categoryFilteredRules;
+    }
+
+    return fuse.search(trimmedQuery)
+      .map((result) => result.item)
+      .filter((rule) => !activeCategory || rule.category === activeCategory);
+  }, [activeCategory, fuse, searchQuery, searchableRules]);
 
   const categories = [...new Set(rulesData.map((r) => r.category))];
   const getCategoryIcon = (category) => category === 'League Overview' ? '📋' : '⛳';

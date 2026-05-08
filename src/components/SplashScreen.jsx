@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { colors, SunLogo } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
+import { SunLogo } from '../theme.jsx';
 
 export const SplashScreen = ({ onComplete }) => {
   useEffect(() => {

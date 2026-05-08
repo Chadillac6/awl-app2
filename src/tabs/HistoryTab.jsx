@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { historicalData } from '../data/staticData';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 const champPhotos = { 2022: '/championship2022.jpg', 2023: '/championship2023.jpg', 2024: '/championship2024.jpg', 2025: '/championship2025.jpeg' };
 const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%' };

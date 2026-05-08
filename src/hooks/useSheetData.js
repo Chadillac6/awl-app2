@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { fetchTextWithRetry } from '../data/sheets';
 
 const CACHE_PREFIX = 'awl-cache:';
@@ -25,7 +25,7 @@ const writeCache = (cacheKey, raw) => {
 };
 
 export const useOnlineStatus = () => {
-  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [isOnline, setIsOnline] = useState(() => (typeof navigator !== 'undefined' ? navigator.onLine : true));
 
   useEffect(() => {
     const goOnline = () => setIsOnline(true);
@@ -49,6 +49,7 @@ export const useSheetData = ({ url, cacheKey, parser, fallbackData }) => {
   const [isStale, setIsStale] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const isOnline = useOnlineStatus();
+  const previousOnlineRef = useRef(isOnline);
 
   const load = useCallback(async ({ silent = false } = {}) => {
     if (silent) setRefreshing(true);
@@ -73,7 +74,7 @@ export const useSheetData = ({ url, cacheKey, parser, fallbackData }) => {
       setIsStale(false);
       setLastUpdated(Date.now());
       writeCache(cacheKey, raw);
-    } catch (err) {
+    } catch {
       if (!cached) setError(isOnline ? 'Unable to load live data right now.' : 'You appear to be offline.');
       else setError(isOnline ? 'Showing last saved data while live refresh is unavailable.' : 'Offline — showing last saved data.');
     } finally {
@@ -87,7 +88,10 @@ export const useSheetData = ({ url, cacheKey, parser, fallbackData }) => {
   }, [load]);
 
   useEffect(() => {
-    if (isOnline) load({ silent: true });
+    const wasOnline = previousOnlineRef.current;
+    previousOnlineRef.current = isOnline;
+
+    if (!wasOnline && isOnline) load({ silent: true });
   }, [isOnline, load]);
 
   return useMemo(() => ({

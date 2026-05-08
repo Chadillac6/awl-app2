@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 export const LoadingState = ({ label = 'Loading...' }) => (
   <div style={{ padding: '40px 16px', textAlign: 'center' }}>

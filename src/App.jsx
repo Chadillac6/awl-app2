@@ -6,14 +6,16 @@ import { HistoryTab } from './tabs/HistoryTab';
 import { LeaderboardTab } from './tabs/LeaderboardTab';
 import { RulesTab } from './tabs/RulesTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
-import { colors, Icons, SunLogo } from './theme.jsx';
+import { colors } from './themeTokens.js';
+import { SunLogo } from './theme.jsx';
+import { AnalyticsIcon, HistoryIcon, LeaderboardIcon, RulesIcon, ScheduleIcon } from './uiIcons.jsx';
 
 const tabs = [
-  { id: 'leaderboard', label: 'Leaderboard', icon: Icons.leaderboard },
-  { id: 'schedule', label: 'Schedule', icon: Icons.schedule },
-  { id: 'rules', label: 'Rules', icon: Icons.rules },
-  { id: 'history', label: 'History', icon: Icons.history },
-  { id: 'analytics', label: 'Stats', icon: Icons.analytics },
+  { id: 'leaderboard', label: 'Leaderboard', icon: LeaderboardIcon },
+  { id: 'schedule', label: 'Schedule', icon: ScheduleIcon },
+  { id: 'rules', label: 'Rules', icon: RulesIcon },
+  { id: 'history', label: 'History', icon: HistoryIcon },
+  { id: 'analytics', label: 'Stats', icon: AnalyticsIcon },
 ];
 
 const tabTitles = {
@@ -56,7 +58,10 @@ export default function GolfLeagueApp() {
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: colors.green, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: '4px 0 calc(6px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'space-around', boxShadow: '0 -6px 18px rgba(10, 92, 46, 0.14)' }}>
         {tabs.map((tab) => (
           <button key={tab.id} type="button" onClick={() => setActiveTab(tab.id)} style={{ background: 'none', border: 'none', padding: '5px 0 2px', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, cursor: 'pointer', color: activeTab === tab.id ? colors.yellow : colors.offWhiteMuted, transition: 'all 0.2s ease' }} aria-label={tab.label}>
-            <div style={{ transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s ease' }}>{tab.icon}</div>
+            {(() => {
+              const Icon = tab.icon;
+              return <div style={{ transform: activeTab === tab.id ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.2s ease' }}><Icon /></div>;
+            })()}
             <span style={{ fontSize: 9, lineHeight: 1, fontWeight: activeTab === tab.id ? 600 : 400, letterSpacing: 0.35, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{tab.label}</span>
             {activeTab === tab.id && <div style={{ width: 4, height: 4, borderRadius: '50%', background: colors.yellow, marginTop: -2 }} />}
           </button>

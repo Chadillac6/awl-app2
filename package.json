@@ -3,15 +3,26 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
+    "test": "node --test",
+    "push:secrets": "node scripts/generate-push-secrets.mjs",
+    "notify:leaderboard": "node scripts/send-leaderboard-notification.mjs",
+    "apps-script:deploy": "node scripts/deploy-apps-script.mjs",
+    "apps-script:configure": "node scripts/configure-apps-script-push.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^8.2.0",
+    "fuse.js": "^7.3.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { DataBanner, ErrorState, LoadingState } from '../components/StatusBlocks';
 import { parseStatsCSV, SHEETS_URLS } from '../data/sheets';
 import { useSheetData } from '../hooks/useSheetData';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 export const AnalyticsTab = () => {
   const { data, loading, error, isStale, lastUpdated, isOnline, refreshing, reload } = useSheetData({
@@ -14,7 +14,7 @@ export const AnalyticsTab = () => {
   const [sortBy, setSortBy] = useState('avgNet');
   const [sortDir, setSortDir] = useState('asc');
 
-  const analyticsData = data?.players || [];
+  const analyticsData = useMemo(() => data?.players || [], [data]);
   const sortedData = useMemo(() => [...analyticsData].sort((a, b) => {
     const valA = a[sortBy];
     const valB = b[sortBy];

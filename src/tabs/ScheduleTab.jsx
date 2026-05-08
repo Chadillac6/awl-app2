@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { DataBanner, ErrorState, LoadingState } from '../components/StatusBlocks';
 import { parseScheduleCSV, SHEETS_URLS } from '../data/sheets';
 import { useSheetData } from '../hooks/useSheetData';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 export const ScheduleTab = () => {
   const { data: scheduleData = [], loading, error, isStale, lastUpdated, isOnline, refreshing, reload } = useSheetData({
