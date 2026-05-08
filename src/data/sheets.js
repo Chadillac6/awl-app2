@@ -282,25 +282,33 @@ export const parseStatsCSV = (csvText) => {
   }
   if (headerRowIndex === -1) return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord };
 
+  const headerRow = rows[headerRowIndex];
+  const totalGrossIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'total gross');
+  const avgGrossIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'avg gross');
+  const totalNetIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'total net');
+  const avgNetIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'avg net');
+  const avgPtsIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'avg pts');
+  const avgHdcpIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'avg hdcp');
+  const birdiesIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'birdies');
+  const missedWeeksIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase().startsWith('missed'));
+  const playerIdx = totalGrossIdx > 0 ? totalGrossIdx - 1 : 2;
+
   for (let i = headerRowIndex + 1; i < rows.length; i += 1) {
     const row = rows[i];
-    const name = row[1];
+    const name = safeText(row[playerIdx]);
     if (row.some((cell) => cell?.includes('All Time'))) break;
-    if (!name || name.trim() === '') continue;
-
-    const totalGross = parseNumber(row[2]);
-    if (totalGross <= 0) continue;
+    if (!name) continue;
 
     statsData.push({
       player: name,
-      totalGross,
-      avgGross: parseNumber(row[3]),
-      totalNet: parseNumber(row[4]),
-      avgNet: parseNumber(row[5]),
-      avgPts: parseNumber(row[6]),
-      avgHdcp: parseNumber(row[7]),
-      birdies: parseInt(row[8], 10) || 0,
-      missedWeeks: parseInt(row[9], 10) || 0,
+      totalGross: parseNumber(row[totalGrossIdx]),
+      avgGross: parseNumber(row[avgGrossIdx]),
+      totalNet: parseNumber(row[totalNetIdx]),
+      avgNet: parseNumber(row[avgNetIdx]),
+      avgPts: parseNumber(row[avgPtsIdx]),
+      avgHdcp: parseNumber(row[avgHdcpIdx]),
+      birdies: parseInt(row[birdiesIdx], 10) || 0,
+      missedWeeks: parseInt(row[missedWeeksIdx], 10) || 0,
     });
   }
 
