@@ -91,11 +91,9 @@ export const LeaderboardTab = () => {
 const headerCell = { fontSize: 9, color: colors.offWhiteMuted, textTransform: 'uppercase' };
 
 const StatCard = ({ title, value, subtitle }) => (
-  <div style={{ background: colors.offWhite, borderRadius: 16, padding: 14, border: `2px solid ${colors.green}`, minHeight: 118, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-    <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>{title}</p>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      <p style={{ fontSize: 24, lineHeight: 1.02, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{value}</p>
-      <p style={{ fontSize: 14, lineHeight: 1.15, fontWeight: 700, color: colors.greenDark, letterSpacing: 0.2 }}>{subtitle}</p>
-    </div>
+  <div style={{ background: colors.offWhite, borderRadius: 16, padding: 14, border: `2px solid ${colors.green}` }}>
+    <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{title}</p>
+    <p style={{ fontSize: 24, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{value}</p>
+    <p style={{ fontSize: 11, color: colors.green }}>{subtitle}</p>
   </div>
 );
