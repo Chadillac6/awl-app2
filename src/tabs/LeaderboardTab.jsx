@@ -1,8 +1,9 @@
 import React from 'react';
+import { PushNotificationCard } from '../components/PushNotificationCard.jsx';
 import { DataBanner, ErrorState, LoadingState } from '../components/StatusBlocks';
 import { defaultWeekHeaders, parseLeaderboardCSV, SHEETS_URLS } from '../data/sheets';
 import { useSheetData } from '../hooks/useSheetData';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 export const LeaderboardTab = () => {
   const { data, loading, error, isStale, lastUpdated, isOnline, refreshing, reload } = useSheetData({
@@ -16,6 +17,9 @@ export const LeaderboardTab = () => {
   if (!data?.leaderboard) return <ErrorState message={error || 'Unable to load leaderboard'} onRetry={reload} />;
 
   const { leaderboard, leagueStats, weekHeaders = defaultWeekHeaders } = data;
+  const birdieLeader = leagueStats?.birdieLeader ?? { raw: '', name: '—', count: null, label: '—' };
+  const birdieKingName = birdieLeader.name || '—';
+  const birdieKingCount = birdieLeader.label || '—';
   const groups = ['groupA', 'groupB', 'groupC', 'groupD'];
   const groupLabels = { groupA: 'Group A', groupB: 'Group B', groupC: 'Group C', groupD: 'Group D' };
   const headers = weekHeaders.length > 0 ? weekHeaders.map((h) => (h === 'Major' ? 'S.O.' : h)) : defaultWeekHeaders;
@@ -25,8 +29,9 @@ export const LeaderboardTab = () => {
   return (
     <div style={{ padding: '0 16px 100px' }}>
       <DataBanner error={error} isStale={isStale} lastUpdated={lastUpdated} isOnline={isOnline} refreshing={refreshing} onRefresh={reload} />
+      <PushNotificationCard />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>
-        <StatCard title="Birdie Leader" value={leagueStats?.birdieLeader?.count || 0} subtitle={leagueStats?.birdieLeader?.name || '--'} />
+        <StatCard title="Birdie King" value={birdieKingName} subtitle={birdieKingCount} />
         <StatCard title="League Birdies" value={leagueStats?.totalBirdies || 0} subtitle="This Season" />
         <StatCard title="Pot Total" value={`$${(leagueStats?.totalBirdies || 0) * 8}`} subtitle="$0.50 Per Birdie" />
       </div>
@@ -86,9 +91,11 @@ export const LeaderboardTab = () => {
 const headerCell = { fontSize: 9, color: colors.offWhiteMuted, textTransform: 'uppercase' };
 
 const StatCard = ({ title, value, subtitle }) => (
-  <div style={{ background: colors.offWhite, borderRadius: 16, padding: 14, border: `2px solid ${colors.green}` }}>
-    <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>{title}</p>
-    <p style={{ fontSize: 24, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{value}</p>
-    <p style={{ fontSize: 11, color: colors.green }}>{subtitle}</p>
+  <div style={{ background: colors.offWhite, borderRadius: 16, padding: 14, border: `2px solid ${colors.green}`, minHeight: 118, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+    <p style={{ fontSize: 10, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>{title}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+      <p style={{ fontSize: 24, lineHeight: 1.02, fontWeight: 700, color: colors.yellow, fontFamily: '"Playfair Display", Georgia' }}>{value}</p>
+      <p style={{ fontSize: 14, lineHeight: 1.15, fontWeight: 700, color: colors.greenDark, letterSpacing: 0.2 }}>{subtitle}</p>
+    </div>
   </div>
 );

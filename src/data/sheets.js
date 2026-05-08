@@ -16,6 +16,20 @@ const parseNumber = (value, fallback = 0) => {
 
 const safeText = (value) => String(value ?? '').trim();
 
+const normalizeBirdieKingName = (rawName) => {
+  const cleaned = safeText(rawName).replace(/^Birdie King:\s*/i, '').replace(/\s+/g, ' ').trim();
+  if (!cleaned) return '—';
+
+  const tokens = cleaned.split(' ').filter(Boolean);
+  if (tokens.length >= 4) return 'Many';
+  return tokens[0] || '—';
+};
+
+const formatBirdieKingCount = (count) => {
+  if (!Number.isFinite(count)) return '—';
+  return `${count} Birdie${count === 1 ? '' : 's'}`;
+};
+
 const csvFieldToString = (field) => {
   if (field == null) return '';
   return String(field).replace(/""/g, '"').trim();
@@ -163,7 +177,7 @@ export const parseScheduleCSV = (csvText) => {
 export const parseLeaderboardCSV = (csvText) => {
   const rows = parseCSV(csvText);
   const leaderboard = { groupA: [], groupB: [], groupC: [], groupD: [] };
-  const leagueStats = { birdieLeader: { name: '', count: 0 }, totalBirdies: 0, weeklyLowWinners: [] };
+  const leagueStats = { birdieLeader: { raw: '', name: '—', count: null, label: '—' }, totalBirdies: 0, weeklyLowWinners: [] };
   let currentGroup = null;
   let weekHeaders = [];
 
@@ -206,13 +220,29 @@ export const parseLeaderboardCSV = (csvText) => {
 
     if (row.some((cell) => cell?.includes('Birdie King:'))) {
       const kingIdx = row.findIndex((cell) => cell?.includes('Birdie King:'));
-      for (let j = kingIdx; j < row.length; j += 1) {
-        const match = row[j]?.match(/([A-Za-z']+)\s*\((\d+)\)/);
-        if (match) {
-          leagueStats.birdieLeader = { name: match[1], count: parseInt(match[2], 10) };
+      const nameParts = [];
+      let count = null;
+
+      for (let j = kingIdx + 1; j < row.length; j += 1) {
+        const cell = safeText(row[j]);
+        if (!cell) continue;
+
+        const numeric = cell.match(/^\d+(?:\.\d+)?$/);
+        if (numeric) {
+          count = parseFloat(cell);
           break;
         }
+
+        nameParts.push(cell.replace(/^Birdie King:\s*/i, '').trim());
       }
+
+      const rawName = nameParts.join(' ').replace(/\s+/g, ' ').trim();
+      leagueStats.birdieLeader = {
+        raw: rawName,
+        name: normalizeBirdieKingName(rawName),
+        count,
+        label: formatBirdieKingCount(count),
+      };
     }
 
     if (row.some((cell) => cell?.includes('Weekly Low:'))) {

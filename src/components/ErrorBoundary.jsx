@@ -1,5 +1,5 @@
 import React from 'react';
-import { colors } from '../theme.jsx';
+import { colors } from '../themeTokens.js';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
