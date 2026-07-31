@@ -32,7 +32,8 @@ const notifyFleet = Boolean(args.notify);
 const strictOcrRows = args['strict-ocr-rows'] !== 'false';
 // AWL regular-week ties split points automatically. This gate is available
 // only for exceptional/manual rounds that explicitly request confirmation.
-const requireTieConfirmation = args['require-tie-confirmation'] === 'true';
+const requireTieConfirmation = args['require-tie-confirmation'] === true
+  || args['require-tie-confirmation'] === 'true';
 const allowConfirmedTies = Boolean(args['allow-ties'] || args['tie-confirmed']);
 
 if (!Number.isInteger(weekNumber) || weekNumber < 1) throw new Error('--week must be a positive integer');

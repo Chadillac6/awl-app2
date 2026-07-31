@@ -120,3 +120,19 @@ test('re-ingestion preserves verified birdies when OCR omits them and accepts ex
   assert.equal(merged.find(({ player }) => player === 'Josh').birdies, 2);
   assert.equal(merged.find(({ player }) => player === 'Jared').birdies, 0);
 });
+
+test('birdie preservation never backfills missing scores from stale sheet data', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    ],
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 40, rowIndex: 1 },
+    ],
+  });
+
+  assert.equal(merged[0].rawScore, 40);
+  assert.equal(merged[0].handicap, undefined);
+  assert.equal(merged[0].netScore, undefined);
+  assert.equal(merged[0].birdies, 2);
+});

@@ -95,20 +95,23 @@ export const mergeExistingAndExtractedScorecardPlayers = ({
   aliasMap = {},
 } = {}) => {
   const mergedByPlayer = new Map();
+  const existingByPlayer = new Map();
 
   existingPlayers.forEach((player) => {
     const sheetName = resolveSheetName(player.player, aliasMap);
-    mergedByPlayer.set(normalizeName(sheetName), { ...player, player: sheetName });
+    const normalizedPlayer = { ...player, player: sheetName };
+    const playerKey = normalizeName(sheetName);
+    existingByPlayer.set(playerKey, normalizedPlayer);
+    mergedByPlayer.set(playerKey, normalizedPlayer);
   });
 
   extractedPlayers.forEach((player, index) => {
     const sourceName = pickFirstDefined(player.player, player.name, player.displayName, player.birdiesName);
     const sheetName = resolveSheetName(sourceName, aliasMap);
     const playerKey = normalizeName(sheetName);
-    const existingPlayer = mergedByPlayer.get(playerKey);
+    const existingPlayer = existingByPlayer.get(playerKey);
     const incomingBirdies = pickFirstDefined(player.birdies, player.birdieCount);
-    mergedByPlayer.set(normalizeName(sheetName), {
-      ...existingPlayer,
+    mergedByPlayer.set(playerKey, {
       ...player,
       player: sheetName,
       // Scorecard OCR may omit birdies even when the sheet already contains a

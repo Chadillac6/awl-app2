@@ -131,9 +131,9 @@ test('buildRoundPreview forwards requireTieConfirmation to the group state', () 
     weekNumber: 1,
     roster: ['Chuck', 'Chad'],
     submittedScores: tied,
-    requireTieConfirmation: false,
+    requireTieConfirmation: true,
   });
-  assert.equal(preview.group.requiresTieConfirmation, false);
+  assert.equal(preview.group.requiresTieConfirmation, true);
 });
 
 test('buildGroupScoreState leaves missing players pending until finalized', () => {
