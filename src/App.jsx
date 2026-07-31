@@ -8,11 +8,11 @@ import { LeaderboardTab } from './tabs/LeaderboardTab';
 import { RulesTab } from './tabs/RulesTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
 import { ChampionshipTab } from './tabs/ChampionshipTab.jsx';
+import { isChampionshipModeEnabled } from './lib/championshipMode.js';
 import { colors } from './themeTokens.js';
 
 export default function GolfLeagueApp() {
-  const championshipMode = import.meta.env.VITE_CHAMPIONSHIP_MODE === 'true'
-    || (import.meta.env.DEV && new URLSearchParams(window.location.search).get('championshipPreview') === '1');
+  const championshipMode = isChampionshipModeEnabled();
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState(championshipMode ? 'championship' : 'leaderboard');
 

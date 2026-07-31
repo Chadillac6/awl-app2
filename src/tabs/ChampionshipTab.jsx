@@ -3,6 +3,7 @@ import { DataBanner } from '../components/StatusBlocks.jsx';
 import { championshipFallback, championshipPayouts } from '../data/championshipData.js';
 import { parseChampionshipCSV, SHEETS_URLS } from '../data/sheets.js';
 import { useSheetData } from '../hooks/useSheetData.js';
+import { isChampionshipPreviewRequest } from '../lib/championshipMode.js';
 import { colors } from '../themeTokens.js';
 
 const cream = '#fbf5e8';
@@ -114,8 +115,7 @@ const Rules = ({ rules }) => (
 );
 
 export const ChampionshipTab = () => {
-  const previewMode = import.meta.env.DEV
-    && new URLSearchParams(window.location.search).get('championshipPreview') === '1';
+  const previewMode = import.meta.env.DEV && isChampionshipPreviewRequest();
   const { data, loading, error, isStale, lastUpdated, isOnline, refreshing, reload } = useSheetData({
     url: previewMode ? '/championship-preview.csv' : SHEETS_URLS.championship,
     cacheKey: 'championship',
