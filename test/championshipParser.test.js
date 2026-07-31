@@ -30,6 +30,10 @@ const championshipCsv = [
   ',Sean,Group 1,68,69,137,151,',
   ',Fitch,Group 1,,,,,,',
   '',
+  'FINAL RESULTS',
+  'Award,Winner,Final Score,Notes',
+  '2026 AWL Champion,,,',
+  '',
   'MODE & NOTIFICATION CONTROLS',
   'Setting,Value,Instructions / Copy',
   'Groupings Confirmed?,YES,',
@@ -45,6 +49,7 @@ test('championship parser extracts all page sections and sorts lowest net first'
   assert.equal(parsed.groups.length, 4);
   assert.deepEqual(parsed.groups[0].players, ['Chuck', 'Sean', 'Fitch', 'Ian']);
   assert.deepEqual(parsed.leaderboard.map((player) => player.name), ['Sean', 'Chuck', 'Fitch']);
+  assert.equal(parsed.leaderboard.some((player) => player.name === 'Winner'), false);
   assert.equal(parsed.leaderboard[0].weekendNet, 137);
   assert.equal(parsed.controls['Groupings Confirmed?'], 'YES');
   assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');

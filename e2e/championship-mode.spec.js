@@ -28,6 +28,10 @@ const championshipCsv = [
   ',Sean,Group 1,68,69,137,151,',
   ',Fitch,Group 1,,,,,,',
   '',
+  'FINAL RESULTS',
+  'Award,Winner,Final Score,Notes',
+  '2026 AWL Champion,,,',
+  '',
   'MODE & NOTIFICATION CONTROLS',
   'Setting,Value,Instructions / Copy',
   'Groupings Confirmed?,YES,',
@@ -72,6 +76,7 @@ test('leaderboard sorts scored golfers by lowest total net', async ({ page }) =>
   await expect(rows.first()).toHaveAttribute('data-player', 'Sean');
   await expect(rows.nth(1)).toHaveAttribute('data-player', 'Chuck');
   await expect(page.getByText('Total Net Scores', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('championship-leaderboard-row')).toHaveCount(3);
 });
 
 test('standard app remains unchanged when preview mode is off', async ({ page }) => {
@@ -80,4 +85,23 @@ test('standard app remains unchanged when preview mode is off', async ({ page })
   await expect(page.getByRole('button', { name: 'Schedule' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Championship' })).toHaveCount(0);
   await expect(page.getByTestId('championship-page')).toHaveCount(0);
+});
+
+test('all unaffected destinations remain usable in championship mode', async ({ page }) => {
+  await page.goto('/?championshipPreview=1');
+  await page.waitForTimeout(4100);
+
+  for (const [button, heading] of [
+    ['Leaderboard', 'Leaderboard'],
+    ['Rules', 'League Rules'],
+    ['History', 'Hall of Fame'],
+    ['Stats', 'Player Stats'],
+    ['Championship', 'Championship'],
+  ]) {
+    await page.getByRole('button', { name: button }).click();
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+  }
+
+  await expect(page.getByRole('button', { name: 'Schedule' })).toHaveCount(0);
+  await expect(page.getByText('Something went wrong')).toHaveCount(0);
 });

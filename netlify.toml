@@ -6,6 +6,12 @@
 [build.environment]
   NODE_VERSION = "22.22.0"
 
+# PR #13 is the approved launch switch. Deploy previews remain in normal mode
+# unless the protected championshipPreview query is used. This setting applies
+# only after the PR is merged into the production branch.
+[context.production.environment]
+  VITE_CHAMPIONSHIP_MODE = "true"
+
 [[redirects]]
   from = "/api/sheets/:tab"
   to = "/.netlify/functions/sheet-csv"
