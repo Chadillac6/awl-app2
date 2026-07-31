@@ -70,6 +70,10 @@ export const ScheduleTab = () => {
   const upcomingGames = scheduleData.filter((g) => g.status === 'upcoming');
   const completedGames = scheduleData.filter((g) => g.status === 'completed');
   const filteredUpcoming = selectedWeek === 'all' ? upcomingGames.slice(1) : upcomingGames.filter((g) => g.week === selectedWeek);
+  const selectedGame = upcomingGames.find((g) => g.week === selectedWeek);
+  const selectedWeekLabel = selectedWeek === 'all'
+    ? 'All Weeks'
+    : selectedGame ? getRoundTitle(selectedGame) : `Week ${selectedWeek}`;
 
   const formatDateLong = (dateStr) => {
     const [month, day] = dateStr.split(' ');
@@ -88,7 +92,7 @@ export const ScheduleTab = () => {
             <h3 style={{ fontFamily: '"Playfair Display", Georgia', fontSize: 16, color: colors.greenDark }}>Upcoming Rounds</h3>
             <div style={{ position: 'relative' }} ref={dropdownRef}>
               <button type="button" aria-haspopup="menu" aria-expanded={showDropdown} aria-controls="schedule-week-filter" onClick={() => setShowDropdown((v) => !v)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: colors.offWhite, border: `1px solid ${colors.green}`, borderRadius: 10, color: colors.greenDark, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-                {selectedWeek === 'all' ? 'All Weeks' : `Week ${selectedWeek}`}
+                {selectedWeekLabel}
                 <span style={{ transform: showDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s ease', fontSize: 10 }}>&#9660;</span>
               </button>
               {showDropdown && (
@@ -194,7 +198,7 @@ const NextRoundCard = ({ game, formatDateLong }) => isChampionshipGame(game) ? (
         <p style={{ fontSize: 11, color: colors.greenDark, textTransform: 'uppercase', letterSpacing: 2, fontWeight: 600, marginBottom: 4 }}>Next Round</p>
         <p style={{ fontSize: 14, color: colors.green, fontWeight: 500 }}>{formatDateLong(game.date)}</p>
       </div>
-      <div style={{ background: colors.green, color: colors.offWhite, padding: '6px 12px', borderRadius: 16, fontSize: 12, fontWeight: 600 }}>Week {game.week}</div>
+      <div style={{ background: colors.green, color: colors.offWhite, padding: '6px 12px', borderRadius: 16, fontSize: 12, fontWeight: 600 }}>{getRoundTitle(game)}</div>
     </div>
     {(game.courses ?? [game.course1, game.course2].filter(Boolean)).map((course) => <CourseBlock key={`${course.name}-${course.groups.join('')}`} course={course} />)}
   </div>

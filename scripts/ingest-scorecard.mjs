@@ -30,8 +30,8 @@ const apply = Boolean(args.apply);
 const sortLeaderboards = args['sort-leaderboards'] !== 'false';
 const notifyFleet = Boolean(args.notify);
 const strictOcrRows = args['strict-ocr-rows'] !== 'false';
-const requireTieConfirmation = Boolean(args['require-tie-confirmation']);
-const allowConfirmedTies = !requireTieConfirmation || Boolean(args['allow-ties'] || args['tie-confirmed']);
+const requireTieConfirmation = args['require-tie-confirmation'] !== 'false';
+const allowConfirmedTies = Boolean(args['allow-ties'] || args['tie-confirmed']);
 
 if (!Number.isInteger(weekNumber) || weekNumber < 1) throw new Error('--week must be a positive integer');
 if (!Array.isArray(roster) || roster.length === 0) throw new Error(`No roster found for ${groupName}`);

@@ -3,12 +3,12 @@ import { PUBLISHED_SHEET_CSV_URLS } from '../../src/data/sheetSources.js';
 
 const SPREADSHEET_ID = process.env.AWL_SHEET_ID ?? '1cv3aai-DNpyw-suyUtYlLrBFvmkStD_jkUYsyEK2zoI';
 
-const LIVE_SHEET_RANGES = {
+const LIVE_SHEET_RANGES = Object.assign(Object.create(null), {
   schedule: 'Schedule!A1:F1000',
   leaderboard: 'Leaderboards!A1:Q1000',
   stats: 'Raw!A1:CC1000',
   championship: 'Championship!A1:H1000',
-};
+});
 
 const CACHE_TTL_MS = 15_000;
 const STALE_TTL_MS = 5 * 60_000;

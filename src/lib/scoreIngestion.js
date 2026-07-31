@@ -254,6 +254,7 @@ export const buildWritePlan = ({
   submittedScores,
   birdiesByPlayer = {},
   finalizeMissingPlayers = false,
+  requireTieConfirmation = true,
   groupName,
   aliasMap = {},
   rowMap = {},
@@ -264,6 +265,7 @@ export const buildWritePlan = ({
     roster,
     submittedScores,
     finalizeMissingPlayers,
+    requireTieConfirmation,
     aliasMap,
   });
 
@@ -311,6 +313,7 @@ export const buildRoundPreview = ({
   submittedScores,
   birdiesByPlayer = {},
   finalizeMissingPlayers = false,
+  requireTieConfirmation = true,
   groupName,
   aliasMap = {},
   rowMap = {},
@@ -322,6 +325,7 @@ export const buildRoundPreview = ({
   submittedScores,
   birdiesByPlayer,
   finalizeMissingPlayers,
+  requireTieConfirmation,
   groupName,
   aliasMap,
   rowMap,
