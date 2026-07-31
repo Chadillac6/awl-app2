@@ -94,7 +94,6 @@ export const mergeExistingAndExtractedScorecardPlayers = ({
   extractedPlayers = [],
   aliasMap = {},
 } = {}) => {
-  const mergedByPlayer = new Map();
   const existingByPlayer = new Map();
 
   existingPlayers.forEach((player) => {
@@ -102,16 +101,16 @@ export const mergeExistingAndExtractedScorecardPlayers = ({
     const normalizedPlayer = { ...player, player: sheetName };
     const playerKey = normalizeName(sheetName);
     existingByPlayer.set(playerKey, normalizedPlayer);
-    mergedByPlayer.set(playerKey, normalizedPlayer);
   });
 
-  extractedPlayers.forEach((player, index) => {
+  const normalizedExtracted = extractedPlayers.map((player, index) => {
     const sourceName = pickFirstDefined(player.player, player.name, player.displayName, player.birdiesName);
     const sheetName = resolveSheetName(sourceName, aliasMap);
     const playerKey = normalizeName(sheetName);
     const existingPlayer = existingByPlayer.get(playerKey);
-    const incomingBirdies = pickFirstDefined(player.birdies, player.birdieCount);
-    mergedByPlayer.set(playerKey, {
+    const incomingBirdieValue = pickFirstDefined(player.birdies, player.birdieCount);
+    const incomingBirdies = coerceNumber(incomingBirdieValue);
+    return {
       ...player,
       player: sheetName,
       // Scorecard OCR may omit birdies even when the sheet already contains a
@@ -120,10 +119,17 @@ export const mergeExistingAndExtractedScorecardPlayers = ({
       birdies: incomingBirdies ?? existingPlayer?.birdies,
       rowOrder: pickRowOrder(player) ?? (existingPlayers.length + index + 1),
       source: 'scorecard',
-    });
+    };
   });
 
-  return sortByRowOrder([...mergedByPlayer.values()]);
+  const extractedKeys = new Set(normalizedExtracted.map((player) => normalizeName(player.player)));
+  const untouchedExisting = [...existingByPlayer.entries()]
+    .filter(([playerKey]) => !extractedKeys.has(playerKey))
+    .map(([, player]) => player);
+
+  // Keep every extracted row, including duplicates, so downstream validation
+  // can surface duplicate submitted names instead of silently replacing one.
+  return sortByRowOrder([...untouchedExisting, ...normalizedExtracted]);
 };
 
 export const buildScreenshotIngestionPreview = ({

@@ -136,3 +136,31 @@ test('birdie preservation never backfills missing scores from stale sheet data',
   assert.equal(merged[0].netScore, undefined);
   assert.equal(merged[0].birdies, 2);
 });
+
+test('duplicate extracted players remain visible to downstream safety validation', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    ],
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, rowIndex: 1 },
+      { player: 'Josh', rawScore: 40, handicap: 8, netScore: 37, rowIndex: 2 },
+    ],
+  });
+
+  assert.equal(merged.length, 2);
+  assert.deepEqual(merged.map(({ player, birdies }) => ({ player, birdies })), [
+    { player: 'Josh', birdies: 2 },
+    { player: 'Josh', birdies: 2 },
+  ]);
+});
+
+test('incoming string birdie counts are normalized to numbers', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [{ player: 'Josh', birdies: 2, rowOrder: 1 }],
+    extractedPlayers: [{ player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: '0', rowIndex: 1 }],
+  });
+
+  assert.equal(merged[0].birdies, 0);
+  assert.equal(typeof merged[0].birdies, 'number');
+});
