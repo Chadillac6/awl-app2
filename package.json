@@ -13,6 +13,7 @@
     "test": "node --test",
     "test:e2e": "playwright test",
     "check": "npm run lint && npm test && npm run test:e2e && npm run build",
+    "verify:championship": "node scripts/verify-championship-launch.mjs",
     "push:secrets": "node scripts/generate-push-secrets.mjs",
     "notify:leaderboard": "node scripts/send-leaderboard-notification.mjs",
     "birdie:update": "node scripts/update-birdie-king.mjs",

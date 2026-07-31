@@ -210,6 +210,7 @@ export const parseChampionshipCSV = (csvText) => {
   const rulesStart = findSection(rows, 'CHAMPIONSHIP RULES');
   const groupsStart = findSection(rows, 'GROUPINGS & TEE TIMES');
   const leaderboardStart = findSection(rows, 'CHAMPIONSHIP LEADERBOARD');
+  const finalResultsStart = findSection(rows, 'FINAL RESULTS');
   const controlsStart = findSection(rows, 'MODE & NOTIFICATION CONTROLS');
 
   const sectionRows = (start, next) => {
@@ -243,7 +244,8 @@ export const parseChampionshipCSV = (csvText) => {
     name.toLowerCase(),
     (groupIndex * 4) + playerIndex,
   ])));
-  const leaderboard = sectionRows(leaderboardStart, controlsStart).map((row) => ({
+  const leaderboardEnd = finalResultsStart >= 0 ? finalResultsStart : controlsStart;
+  const leaderboard = sectionRows(leaderboardStart, leaderboardEnd).map((row) => ({
     position: optionalNumber(row[0]),
     name: safeText(row[1]),
     group: safeText(row[2]),
