@@ -32,7 +32,7 @@ export const LeaderboardTab = () => {
   const minTableWidth = pinnedWidth + (headers.length * 36);
 
   return (
-    <div style={{ padding: '0 16px 100px' }}>
+    <div style={{ padding: '0 16px 24px' }}>
       <DataBanner error={error} isStale={isStale} lastUpdated={lastUpdated} isOnline={isOnline} refreshing={refreshing} onRefresh={reload} />
       <PushNotificationCard />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 20 }}>

@@ -23,7 +23,7 @@ export const HistoryTab = () => {
   const pastChamps = historicalData.championships.slice(1);
 
   return (
-    <div style={{ padding: '0 16px 100px' }}>
+    <div style={{ padding: '0 16px 24px' }}>
       <FeatureCard item={currentChamp} isMobile={isMobile} showResults={showCurrentChampResults} onToggle={() => setShowCurrentChampResults((v) => !v)} />
       <h3 style={{ fontFamily: '"Playfair Display", Georgia', fontSize: 18, color: colors.greenDark, marginBottom: 14 }}>Hall of Champions</h3>
       {pastChamps.map((champ) => <AccordionCard key={champ.year} item={champ} expanded={expandedYear === champ.year} onToggle={() => setExpandedYear(expandedYear === champ.year ? null : champ.year)} image={champPhotos[champ.year]} imagePosition={champPhotoPositions[champ.year]} isMobile={isMobile} />)}

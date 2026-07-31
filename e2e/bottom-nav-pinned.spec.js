@@ -40,8 +40,8 @@ const scrollMainToBottom = async (page) => {
 const expectNavPinnedToViewportBottom = async (page) => {
   const nav = page.getByRole('navigation', { name: 'Primary' });
   const box = await nav.boundingBox();
-  const viewportHeight = await page.evaluate(() => innerHeight);
   expect(box).not.toBeNull();
+  const viewportHeight = await page.evaluate(() => innerHeight);
   expect(Math.abs((box.y + box.height) - viewportHeight)).toBeLessThanOrEqual(1);
 };
 
@@ -92,6 +92,19 @@ test.describe('bottom navigation stays glued to the viewport bottom', () => {
 
     await expectNavPinnedToViewportBottom(page);
     await scrollMainToBottom(page);
+    await expectNavPinnedToViewportBottom(page);
+  });
+
+  test('the scroll container is keyboard focusable and scrollable', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(4100);
+
+    const main = page.locator('#main-content');
+    await main.focus();
+    await page.keyboard.press('End');
+    await page.waitForTimeout(300);
+
+    expect(await main.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
     await expectNavPinnedToViewportBottom(page);
   });
 

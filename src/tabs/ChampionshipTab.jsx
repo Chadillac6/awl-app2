@@ -125,7 +125,7 @@ export const ChampionshipTab = () => {
   const championship = data?.groups?.length ? data : championshipFallback;
 
   return (
-    <div data-testid="championship-page" style={{ padding: '0 14px 100px', background: cream }}>
+    <div data-testid="championship-page" style={{ padding: '0 14px 24px', background: cream }}>
       <DataBanner error={error} isStale={isStale} lastUpdated={lastUpdated} isOnline={isOnline} refreshing={refreshing} onRefresh={reload} />
       <section style={{ overflow: 'hidden', padding: '14px 16px 18px', border: '1px solid rgba(183,135,22,0.48)', borderRadius: 24, background: 'radial-gradient(circle at 50% 30%, #fffdf8 0%, #f6ead0 72%, #ead39a 100%)', textAlign: 'center', boxShadow: '0 16px 38px rgba(29,63,48,0.14)' }}>
         <p style={{ color: colors.greenDark, fontSize: 9, fontWeight: 700, letterSpacing: 1.8, textTransform: 'uppercase' }}>● &nbsp; Championship Mode Engaged</p>

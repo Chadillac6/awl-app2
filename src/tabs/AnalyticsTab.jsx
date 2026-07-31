@@ -93,7 +93,7 @@ export const AnalyticsTab = () => {
   const tableTitle = selectedWeekStats ? `${selectedWeekStats.label} Scorecard` : 'All Weeks Averages';
 
   return (
-    <div style={{ padding: '0 16px 100px' }}>
+    <div style={{ padding: '0 16px 24px' }}>
       <DataBanner error={error} isStale={isStale} lastUpdated={lastUpdated} isOnline={isOnline} refreshing={refreshing} onRefresh={reload} />
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
         <SummaryCard title="Most Birdies" testId="stats-most-birdies-card" name={data?.mostBirdiesRecord?.player} score={data?.mostBirdiesRecord?.score} />

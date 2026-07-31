@@ -83,7 +83,7 @@ export const ScheduleTab = () => {
   };
 
   return (
-    <div style={{ padding: '0 16px 100px' }}>
+    <div style={{ padding: '0 16px 24px' }}>
       <DataBanner error={error} isStale={isStale} lastUpdated={lastUpdated} isOnline={isOnline} refreshing={refreshing} onRefresh={reload} />
       {upcomingGames.length > 0 && <NextRoundCard game={upcomingGames[0]} formatDateLong={formatDateLong} />}
       {upcomingGames.length > 1 && (
