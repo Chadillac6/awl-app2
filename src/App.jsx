@@ -31,10 +31,10 @@ export default function GolfLeagueApp() {
   if (showSplash) return <SplashScreen championshipMode={championshipMode} onComplete={() => setShowSplash(false)} />;
 
   return (
-    <div style={{ minHeight: '100dvh', background: colors.offWhite, fontFamily: '"Source Sans 3", system-ui, sans-serif', position: 'relative', paddingBottom: 'calc(72px + env(safe-area-inset-bottom, 0px))' }}>
+    <div style={{ height: '100dvh', background: colors.offWhite, fontFamily: '"Source Sans 3", system-ui, sans-serif', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <AppHeader activeTab={activeTab} />
 
-      <main id="main-content" style={{ paddingTop: 20 }}><ErrorBoundary key={activeTab}>{renderTab()}</ErrorBoundary></main>
+      <main id="main-content" style={{ flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehaviorY: 'contain', paddingTop: 20, paddingBottom: 16 }}><ErrorBoundary key={activeTab}>{renderTab()}</ErrorBoundary></main>
 
       <BottomNavigation activeTab={activeTab} championshipMode={championshipMode} onChange={setActiveTab} />
     </div>

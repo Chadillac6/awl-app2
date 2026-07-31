@@ -30,7 +30,7 @@ const tabTitles = {
 };
 
 export const AppHeader = ({ activeTab }) => (
-  <header style={{ paddingTop: 'calc(env(safe-area-inset-top, 12px) + 8px)', paddingBottom: 14, paddingLeft: 18, paddingRight: 18, background: colors.green, borderBottomLeftRadius: 22, borderBottomRightRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+  <header style={{ flexShrink: 0, paddingTop: 'calc(env(safe-area-inset-top, 12px) + 8px)', paddingBottom: 14, paddingLeft: 18, paddingRight: 18, background: colors.green, borderBottomLeftRadius: 22, borderBottomRightRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
     <div>
       <h1 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: 24, fontWeight: 700, color: colors.offWhite, margin: 0, lineHeight: 1.05 }}>{tabTitles[activeTab] || 'AWL'}</h1>
       <p style={{ fontSize: 11, color: colors.yellow, marginTop: 1, letterSpacing: 0.9, fontWeight: 600 }}>AM WALKING LEAGUE</p>
@@ -45,7 +45,7 @@ export const BottomNavigation = ({ activeTab, championshipMode = false, onChange
     : tabs;
 
   return (
-  <nav aria-label="Primary" style={{ position: 'fixed', zIndex: 1000, bottom: 0, left: 0, right: 0, background: colors.green, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: '4px 0 calc(6px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'space-around', boxShadow: '0 -6px 18px rgba(10, 92, 46, 0.14)' }}>
+  <nav aria-label="Primary" style={{ flexShrink: 0, zIndex: 1000, background: colors.green, borderTopLeftRadius: 18, borderTopRightRadius: 18, padding: '4px 0 calc(6px + env(safe-area-inset-bottom, 0px))', display: 'flex', justifyContent: 'space-around', boxShadow: '0 -6px 18px rgba(10, 92, 46, 0.14)' }}>
     {visibleTabs.map((tab) => {
       const Icon = tab.icon;
       const active = activeTab === tab.id;
