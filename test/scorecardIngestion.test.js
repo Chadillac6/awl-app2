@@ -102,3 +102,65 @@ test('existing week scores merge with new scorecard rows so group points are rec
     { player: 'Ian', netScore: 44, points: 0, birdies: 0 },
   ]);
 });
+
+test('re-ingestion preserves verified birdies when OCR omits them and accepts explicit zero', () => {
+  const existingPlayers = [
+    { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    { player: 'Jared', rawScore: 40, handicap: 14, netScore: 35, birdies: 1, rowOrder: 2 },
+  ];
+
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers,
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, rowIndex: 1 },
+      { player: 'Jared', rawScore: 40, handicap: 14, netScore: 35, birdies: 0, rowIndex: 2 },
+    ],
+  });
+
+  assert.equal(merged.find(({ player }) => player === 'Josh').birdies, 2);
+  assert.equal(merged.find(({ player }) => player === 'Jared').birdies, 0);
+});
+
+test('birdie preservation never backfills missing scores from stale sheet data', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    ],
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 40, rowIndex: 1 },
+    ],
+  });
+
+  assert.equal(merged[0].rawScore, 40);
+  assert.equal(merged[0].handicap, undefined);
+  assert.equal(merged[0].netScore, undefined);
+  assert.equal(merged[0].birdies, 2);
+});
+
+test('duplicate extracted players remain visible to downstream safety validation', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    ],
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, rowIndex: 1 },
+      { player: 'Josh', rawScore: 40, handicap: 8, netScore: 37, rowIndex: 2 },
+    ],
+  });
+
+  assert.equal(merged.length, 2);
+  assert.deepEqual(merged.map(({ player, birdies }) => ({ player, birdies })), [
+    { player: 'Josh', birdies: 2 },
+    { player: 'Josh', birdies: 2 },
+  ]);
+});
+
+test('incoming string birdie counts are normalized to numbers', () => {
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers: [{ player: 'Josh', birdies: 2, rowOrder: 1 }],
+    extractedPlayers: [{ player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: '0', rowIndex: 1 }],
+  });
+
+  assert.equal(merged[0].birdies, 0);
+  assert.equal(typeof merged[0].birdies, 'number');
+});

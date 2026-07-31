@@ -137,7 +137,9 @@ const normalizeSubmittedEntry = (entry, aliasMap = {}) => {
 export const scoreSubmittedPlayers = (entries, options = {}) => {
   const {
     pointSlots = DEFAULT_POINT_SLOTS,
-    requireTieConfirmation = true,
+    // AWL regular-week ties intentionally split the available point slots.
+    // Confirmation is opt-in for exceptional/manual events only.
+    requireTieConfirmation = false,
   } = options;
 
   const submitted = withOriginalIndex(entries.map((entry) => normalizeSubmittedEntry(entry, options.aliasMap)))
@@ -187,7 +189,7 @@ export const buildGroupScoreState = ({
   roster = [],
   submittedScores = [],
   finalizeMissingPlayers = false,
-  requireTieConfirmation = true,
+  requireTieConfirmation = false,
   aliasMap = {},
 } = {}) => {
   const normalizedSubmitted = submittedScores.map((entry) => normalizeSubmittedEntry(entry, aliasMap));
@@ -254,7 +256,7 @@ export const buildWritePlan = ({
   submittedScores,
   birdiesByPlayer = {},
   finalizeMissingPlayers = false,
-  requireTieConfirmation = true,
+  requireTieConfirmation = false,
   groupName,
   aliasMap = {},
   rowMap = {},
@@ -313,7 +315,7 @@ export const buildRoundPreview = ({
   submittedScores,
   birdiesByPlayer = {},
   finalizeMissingPlayers = false,
-  requireTieConfirmation = true,
+  requireTieConfirmation = false,
   groupName,
   aliasMap = {},
   rowMap = {},

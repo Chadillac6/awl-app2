@@ -12,6 +12,8 @@
 1. Create or select a GitHub issue describing the requested outcome.
 2. Create a branch from the latest `main`.
 3. Implement the change with proportionate automated coverage.
+   Review `docs/AWL_DOMAIN_RULES.md` before changing scoring or ingestion logic;
+   its documented behaviors are intentional and apply to automated reviewers.
 4. Run `npm run check` locally.
 5. Push the branch and open a pull request linked to the issue.
 6. Wait for the GitHub quality gate and Netlify deploy preview.

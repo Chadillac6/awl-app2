@@ -8,6 +8,7 @@ import {
 import { buildSheetPlayerMaps, DEFAULT_GROUPS } from '../src/lib/scoreIngestion.js';
 import { getSpreadsheetValues, updateSpreadsheetValues } from '../src/lib/googleSheetsBatch.js';
 import { updateLeaderboardBirdieKing } from '../src/lib/birdieKing.js';
+import { parseOptInBoolean } from '../src/lib/cliArgs.js';
 
 const SHEET_ID = process.env.AWL_SHEET_ID ?? '1cv3aai-DNpyw-suyUtYlLrBFvmkStD_jkUYsyEK2zoI';
 const TAB = process.env.AWL_RAW_TAB ?? 'Raw';
@@ -30,7 +31,12 @@ const apply = Boolean(args.apply);
 const sortLeaderboards = args['sort-leaderboards'] !== 'false';
 const notifyFleet = Boolean(args.notify);
 const strictOcrRows = args['strict-ocr-rows'] !== 'false';
-const requireTieConfirmation = args['require-tie-confirmation'] !== 'false';
+// AWL regular-week ties split points automatically. This gate is available
+// only for exceptional/manual rounds that explicitly request confirmation.
+const requireTieConfirmation = parseOptInBoolean(
+  args['require-tie-confirmation'],
+  'require-tie-confirmation',
+);
 const allowConfirmedTies = Boolean(args['allow-ties'] || args['tie-confirmed']);
 
 if (!Number.isInteger(weekNumber) || weekNumber < 1) throw new Error('--week must be a positive integer');
