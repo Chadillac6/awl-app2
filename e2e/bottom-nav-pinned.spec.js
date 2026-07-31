@@ -94,8 +94,9 @@ test.describe('bottom navigation stays glued to the viewport bottom', () => {
       await page.goto('/');
       await page.waitForTimeout(4100);
       await page.getByRole('button', { name: tab }).click();
-      await page.waitForTimeout(500);
-      expect(await page.locator('#main-content').evaluate((el) => el.scrollHeight > el.clientHeight), `${tab} content should overflow the scroll container`).toBe(true);
+      await expect
+        .poll(() => page.locator('#main-content').evaluate((el) => el.scrollHeight > el.clientHeight), { message: `${tab} content should overflow the scroll container` })
+        .toBe(true);
 
       await expectNavPinnedToViewportBottom(page);
       await scrollMainToBottom(page);
@@ -118,11 +119,16 @@ test.describe('bottom navigation stays glued to the viewport bottom', () => {
     await page.waitForTimeout(4100);
 
     const main = page.locator('#main-content');
+    await expect.poll(() => main.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
     await main.focus();
-    await page.keyboard.press('End');
-    await page.waitForTimeout(300);
+    expect(await main.evaluate((el) => el === document.activeElement)).toBe(true);
 
-    expect(await main.evaluate((el) => el.scrollTop)).toBeGreaterThan(0);
+    await expect
+      .poll(async () => {
+        await page.keyboard.press('End');
+        return main.evaluate((el) => el.scrollTop);
+      }, { message: 'pressing End should scroll the main container' })
+      .toBeGreaterThan(0);
     await expectNavPinnedToViewportBottom(page);
   });
 
