@@ -28,7 +28,15 @@ export default defineConfig([
     },
   },
   {
-    files: ['netlify/functions/**/*.js', 'scripts/**/*.mjs', 'src/lib/googleSheetsBatch.js'],
+    files: [
+      'netlify/functions/**/*.js',
+      'scripts/**/*.mjs',
+      'src/lib/googleAuth.js',
+      'src/lib/googleSheetsBatch.js',
+      'test/**/*.js',
+      'e2e/**/*.js',
+      'playwright.config.js',
+    ],
     languageOptions: {
       ecmaVersion: 2022,
       globals: {

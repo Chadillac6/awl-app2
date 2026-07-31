@@ -8,4 +8,5 @@ export const APP_SHEET_CSV_URLS = {
   schedule: '/api/sheets/schedule',
   leaderboard: '/api/sheets/leaderboard',
   stats: '/api/sheets/stats',
+  championship: '/api/sheets/championship',
 };

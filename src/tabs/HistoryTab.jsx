@@ -4,8 +4,8 @@ import { colors } from '../themeTokens.js';
 
 const champPhotos = { 2022: '/championship2022.jpg', 2023: '/championship2023.jpg', 2024: '/championship2024.jpg', 2025: '/championship2025.jpeg' };
 const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%' };
-const senecaPhotos = { 2025: '/seneca2025.jpeg' };
-const senecaPhotoPositions = { 2025: 'center 26%' };
+const senecaPhotos = { 2026: '/seneca2026.jpg', 2025: '/seneca2025.jpeg' };
+const senecaPhotoPositions = { 2026: 'center 40%', 2025: 'center 26%' };
 
 export const HistoryTab = () => {
   const [expandedYear, setExpandedYear] = useState(null);
@@ -45,27 +45,30 @@ const FeatureCard = ({ item, isMobile, showResults, onToggle }) => (
       <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 16 }}>
         {item.results.slice(1, 3).map((player, idx) => <div key={player.name} style={{ background: 'rgba(255,255,255,0.5)', borderRadius: 10, padding: '8px 14px' }}><p style={{ fontSize: 11, color: colors.textMuted }}>{idx === 0 ? '2nd' : '3rd'}</p><p style={{ fontSize: 13, fontWeight: 600, color: colors.greenDark }}>{player.name}</p><p style={{ fontSize: 12, color: colors.green }}>{player.score}</p></div>)}
       </div>
-      <button type="button" onClick={onToggle} style={{ marginTop: 16, background: colors.green, color: colors.offWhite, border: 'none', padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', position: 'relative', zIndex: 10 }}>{showResults ? 'Hide Results' : 'View Full Results'}</button>
-      {showResults && <ResultsList results={item.results} translucent />}
+      <button type="button" aria-expanded={showResults} aria-controls="current-championship-results" onClick={onToggle} style={{ marginTop: 16, background: colors.green, color: colors.offWhite, border: 'none', padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer', position: 'relative', zIndex: 10 }}>{showResults ? 'Hide Results' : 'View Full Results'}</button>
+      {showResults && <div id="current-championship-results" role="region" aria-label={`${item.year} full results`}><ResultsList results={item.results} translucent /></div>}
     </div>
   </div>
 );
 
-const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, isMobile, seneca = false }) => (
+const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, isMobile, seneca = false }) => {
+  const panelId = `${seneca ? 'seneca' : 'championship'}-${item.year}-results`;
+  return (
   <div style={{ background: colors.offWhite, borderRadius: 14, marginBottom: 12, border: expanded ? `2px solid ${colors.green}` : `1px solid ${colors.offWhiteMuted}`, overflow: 'hidden' }}>
-    <div onClick={onToggle} style={{ display: 'flex', alignItems: 'center', padding: 16, cursor: 'pointer' }}>
+    <button type="button" aria-expanded={expanded} aria-controls={panelId} onClick={onToggle} style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'left', display: 'flex', alignItems: 'center', padding: 16, cursor: 'pointer' }}>
       <div style={{ width: 50, height: 50, borderRadius: 12, background: seneca ? colors.yellow : colors.green, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 14 }}><span style={{ fontFamily: '"Playfair Display", Georgia', fontSize: 16, fontWeight: 700, color: seneca ? colors.greenDark : colors.yellow }}>{item.year}</span></div>
       <div style={{ flex: 1 }}><p style={{ fontWeight: 700, color: colors.greenDark, fontSize: 16, marginBottom: 2 }}>{item.results[0].name}</p><p style={{ fontSize: 11, color: colors.textMuted }}>{seneca ? item.format : `${item.results[0].score}${item.results[0].note ? ` - ${item.results[0].note}` : ''}`}</p></div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{seneca && <span style={{ background: colors.green, color: colors.offWhite, padding: '4px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600 }}>{item.results[0].score}</span>}<span style={{ color: colors.textMuted, transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s ease' }}>&#9660;</span></div>
-    </div>
+    </button>
     {expanded && (
-      <div style={{ borderTop: `1px solid ${colors.offWhiteMuted}` }}>
+      <div id={panelId} role="region" aria-label={`${item.year} full results`} style={{ borderTop: `1px solid ${colors.offWhiteMuted}` }}>
         {image && <img src={image} alt={`${item.year}`} loading="lazy" decoding="async" style={{ width: '100%', height: isMobile ? 210 : 240, objectFit: 'cover', objectPosition: imagePosition || 'center 30%', display: 'block' }} />}
         <div style={{ padding: '0 16px 16px' }}><p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '12px 0 8px', fontWeight: 600 }}>Full Results</p><ResultsList results={item.results} /></div>
       </div>
     )}
   </div>
-);
+  );
+};
 
 const ResultsList = ({ results, translucent = false }) => (
   <div style={{ marginTop: 16, background: translucent ? 'rgba(255,255,255,0.6)' : 'transparent', borderRadius: 12, padding: translucent ? 12 : 0, textAlign: 'left' }}>

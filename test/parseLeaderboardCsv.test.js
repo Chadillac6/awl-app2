@@ -34,6 +34,23 @@ test('parseLeaderboardCSV falls back to Many for long Birdie King names and em d
   assert.equal(parsed.leagueStats.birdieLeader.label, '—');
 });
 
+test('parseLeaderboardCSV keeps tied Birdie King names together', () => {
+  const csv = [
+    ',,,Week,1,2,3',
+    'Group A,,,Total',
+    ',1,Chad,12,4,4,4',
+    ',,,,,Total Birdies:,,8,,Birdie King:,,,Tony & Ian,,2,,',
+  ].join('\n');
+
+  const parsed = parseLeaderboardCSV(csv);
+
+  assert.equal(parsed.leagueStats.totalBirdies, 8);
+  assert.equal(parsed.leagueStats.birdieLeader.raw, 'Tony & Ian');
+  assert.equal(parsed.leagueStats.birdieLeader.name, 'Tony & Ian');
+  assert.equal(parsed.leagueStats.birdieLeader.count, 2);
+  assert.equal(parsed.leagueStats.birdieLeader.label, '2 Birdies');
+});
+
 test('parseStatsCSV reads the player column next to Total Gross and keeps zero-placeholder rows', () => {
   const csv = [
     ',,,Total Gross,Avg Gross,Total Net,Avg Net,Avg Pts,Avg Hdcp,Birdies,Missed Week',

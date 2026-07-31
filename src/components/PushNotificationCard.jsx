@@ -45,7 +45,7 @@ export const PushNotificationCard = () => {
       {showInstallHint && <p style={{ fontSize: 10, color: colors.textMuted, marginTop: 8 }}>On iPhone, install AWL to your Home Screen first, then open it from the icon to enable push alerts.</p>}
       {!support.supported && <p style={{ fontSize: 10, color: colors.textMuted, marginTop: 8 }}>{support.missingReason}</p>}
       {denied && <p style={{ fontSize: 10, color: '#9b2c2c', marginTop: 8 }}>Notifications are blocked for this app. Enable them in iOS Settings to receive alerts.</p>}
-      {message && <p style={{ fontSize: 10, color: status === 'error' ? '#9b2c2c' : colors.green, marginTop: 8 }}>{message}</p>}
+      {message && <p role={status === 'error' ? 'alert' : 'status'} style={{ fontSize: 10, color: status === 'error' ? '#9b2c2c' : colors.green, marginTop: 8 }}>{message}</p>}
     </div>
   );
 };

@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {
   buildRankUpdateValues,
   buildSortRangeRequest,
+  buildTotalFormulaValues,
+  buildWeeklyPointFormulaValues,
   groupSortPreview,
   sortLeaderboardRows,
 } from '../src/lib/leaderboardSort.js';
@@ -63,4 +65,31 @@ test('buildSortRangeRequest targets a whole group row block', () => {
 
 test('buildRankUpdateValues emits sequential ranks after sorting', () => {
   assert.deepEqual(buildRankUpdateValues({ count: 4 }), [['1'], ['2'], ['3'], ['4']]);
+});
+
+test('buildTotalFormulaValues links leaderboard totals back to Raw totals by player row', () => {
+  assert.deepEqual(buildTotalFormulaValues({ startRow: 10, endRow: 13 }), [
+    ['=VLOOKUP($C10, Raw!$B$3:$CC$21, 2, FALSE)'],
+    ['=VLOOKUP($C11, Raw!$B$3:$CC$21, 2, FALSE)'],
+    ['=VLOOKUP($C12, Raw!$B$3:$CC$21, 2, FALSE)'],
+    ['=VLOOKUP($C13, Raw!$B$3:$CC$21, 2, FALSE)'],
+  ]);
+});
+
+test('buildWeeklyPointFormulaValues links weekly leaderboard points by player name', () => {
+  assert.deepEqual(buildWeeklyPointFormulaValues({ startRow: 10, endRow: 10 }), [[
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 7, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 12, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 17, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 22, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 28, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 33, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 38, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 43, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 48, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 53, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 58, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 63, FALSE)',
+    '=VLOOKUP($C10, Raw!$B$3:$CC$21, 68, FALSE)',
+  ]]);
 });

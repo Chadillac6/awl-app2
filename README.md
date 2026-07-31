@@ -12,7 +12,7 @@ A mobile-first web app for the AM Walking League, a 14-week summer golf league. 
 
 ## Data Source
 
-Live data is pulled from a published Google Sheets spreadsheet (CSV export) with offline caching via localStorage. The app uses a stale-while-revalidate pattern with automatic retry on failure.
+Live data is read through Netlify Functions from the AWL Google Sheet using service-account authentication, with published CSV fallback and offline caching in the browser.
 
 ## Tech Stack
 
@@ -36,3 +36,10 @@ npm run dev
 | `npm run build` | Production build |
 | `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run unit and integration tests |
+| `npm run test:e2e` | Run Playwright browser regressions |
+| `npm run check` | Run the complete local quality gate |
+
+## Delivery Workflow
+
+Production changes use feature branches, pull requests, GitHub Actions quality gates, and Netlify deploy previews. See [docs/SDLC.md](docs/SDLC.md) for the complete process.

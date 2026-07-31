@@ -25,22 +25,7 @@ The Apps Script stores the Netlify send endpoint and admin key in Script Propert
 - `AWL_PUSH_ENDPOINT`
 - `AWL_PUSH_ADMIN_KEY`
 
-Deploy/update the bound script:
-
-```bash
-GOG_KEYRING=file GOG_KEYRING_PASSWORD=gogclaw GOG_ACCOUNT=chad.supers@gmail.com \
-node scripts/deploy-apps-script.mjs
-```
-
-Configure its secret properties:
-
-```bash
-GOG_KEYRING=file GOG_KEYRING_PASSWORD=gogclaw GOG_ACCOUNT=chad.supers@gmail.com \
-AWL_APPS_SCRIPT_ID=... \
-AWL_PUSH_ENDPOINT=https://amwalkingleague.netlify.app/api/send-notification \
-AWL_PUSH_ADMIN_API_KEY=... \
-node scripts/configure-apps-script-push.mjs
-```
+Deploy/update and configure the bound script through the direct Apps Script admin path only. Do not use OAuth CLI tooling for AWL sheet operations.
 
 ### Bot / CLI
 

@@ -1,11 +1,16 @@
 #!/usr/bin/env node
 import { execFileSync } from 'node:child_process';
-import { buildScreenshotIngestionPreview } from '../src/lib/scorecardIngestion.js';
-import { DEFAULT_GROUPS } from '../src/lib/scoreIngestion.js';
+import {
+  buildExistingWeekScorecardPlayers,
+  buildScreenshotIngestionPreview,
+  mergeExistingAndExtractedScorecardPlayers,
+} from '../src/lib/scorecardIngestion.js';
+import { buildSheetPlayerMaps, DEFAULT_GROUPS } from '../src/lib/scoreIngestion.js';
+import { getSpreadsheetValues, updateSpreadsheetValues } from '../src/lib/googleSheetsBatch.js';
+import { updateLeaderboardBirdieKing } from '../src/lib/birdieKing.js';
 
 const SHEET_ID = process.env.AWL_SHEET_ID ?? '1cv3aai-DNpyw-suyUtYlLrBFvmkStD_jkUYsyEK2zoI';
 const TAB = process.env.AWL_RAW_TAB ?? 'Raw';
-const GOG = process.env.GOG_BIN ?? '/opt/homebrew/bin/gog';
 
 const args = Object.fromEntries(process.argv.slice(2).map((arg) => {
   const [key, ...rest] = arg.replace(/^--/, '').split('=');
@@ -17,16 +22,6 @@ const requireArg = (name) => {
   return args[name];
 };
 
-const runGogJson = (gogArgs) => JSON.parse(execFileSync(GOG, gogArgs, {
-  encoding: 'utf8',
-  env: process.env,
-}));
-
-const runGog = (gogArgs) => execFileSync(GOG, gogArgs, {
-  encoding: 'utf8',
-  env: process.env,
-});
-
 const weekNumber = Number(requireArg('week'));
 const groupName = requireArg('group');
 const roster = args.roster ? JSON.parse(args.roster) : DEFAULT_GROUPS[groupName];
@@ -34,20 +29,45 @@ const extractedPlayers = JSON.parse(requireArg('players-json'));
 const apply = Boolean(args.apply);
 const sortLeaderboards = args['sort-leaderboards'] !== 'false';
 const notifyFleet = Boolean(args.notify);
+const strictOcrRows = args['strict-ocr-rows'] !== 'false';
+const requireTieConfirmation = Boolean(args['require-tie-confirmation']);
+const allowConfirmedTies = !requireTieConfirmation || Boolean(args['allow-ties'] || args['tie-confirmed']);
 
 if (!Number.isInteger(weekNumber) || weekNumber < 1) throw new Error('--week must be a positive integer');
 if (!Array.isArray(roster) || roster.length === 0) throw new Error(`No roster found for ${groupName}`);
 
-const sheet = runGogJson(['sheets', 'get', SHEET_ID, `${TAB}!A1:ZZ21`, '--json']);
+const hasRowHints = extractedPlayers.some((player) => Number.isFinite(
+  player.rowOrder ?? player.rowIndex ?? player.rowNumber ?? player.ocrRow ?? player.lineIndex ?? player.sourceRow ?? player.y ?? player.top,
+));
+
+if (strictOcrRows && extractedPlayers.length > 1 && !hasRowHints) {
+  throw new Error('OCR rows must include rowIndex/rowNumber/ocrRow/sourceRow so names and scores can be matched safely');
+}
+
+const sheet = await getSpreadsheetValues({ spreadsheetId: SHEET_ID, range: `${TAB}!A1:ZZ21` });
 const sheetValues = sheet.values ?? [];
+const { aliasMap, rowMap } = buildSheetPlayerMaps(sheetValues);
+
+const existingPlayers = buildExistingWeekScorecardPlayers({
+  sheetValues,
+  weekNumber,
+  roster,
+  rowMap,
+});
+const mergedPlayers = mergeExistingAndExtractedScorecardPlayers({
+  existingPlayers,
+  extractedPlayers,
+  aliasMap,
+});
 
 const preview = buildScreenshotIngestionPreview({
   sheetValues,
   weekNumber,
   groupName,
   roster,
-  extractedPlayers,
+  extractedPlayers: mergedPlayers,
   defaultBirdies: 0,
+  requireTieConfirmation,
 });
 
 const writeRows = preview.rows.filter((row) => row.status === 'scored');
@@ -61,6 +81,8 @@ const summary = {
   mode: apply ? 'apply' : 'preview',
   weekNumber,
   groupName,
+  mergedExistingPlayers: existingPlayers.length,
+  submittedPlayers: extractedPlayers.length,
   updates,
   issues: preview.group.issues,
   requiresTieConfirmation: preview.group.requiresTieConfirmation,
@@ -71,17 +93,16 @@ if (!apply) {
   process.exit(0);
 }
 
-if (preview.group.requiresTieConfirmation) {
-  throw new Error('Tie detected; approval/tiebreak confirmation required before writing');
+if (preview.group.requiresTieConfirmation && !allowConfirmedTies) {
+  throw new Error('Tie detected; approval/tiebreak confirmation required before writing. Re-run with --allow-ties after Chad confirms split points.');
 }
 
 for (const update of updates) {
-  runGog([
-    'sheets', 'update', SHEET_ID, update.range,
-    '--values-json', JSON.stringify(update.values),
-    '--input', 'USER_ENTERED',
-    '--no-input',
-  ]);
+  await updateSpreadsheetValues({
+    spreadsheetId: SHEET_ID,
+    range: update.range,
+    values: update.values,
+  });
 }
 
 if (sortLeaderboards) {
@@ -90,6 +111,8 @@ if (sortLeaderboards) {
     env: process.env,
   });
   summary.leaderboardSort = JSON.parse(sortOutput);
+} else {
+  summary.birdieKing = await updateLeaderboardBirdieKing({ spreadsheetId: SHEET_ID });
 }
 
 if (notifyFleet) {

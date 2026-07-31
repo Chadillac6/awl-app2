@@ -64,3 +64,31 @@ export const buildSortRangeRequest = ({
 });
 
 export const buildRankUpdateValues = ({ startRank = 1, count }) => Array.from({ length: count }, (_, index) => [String(startRank + index)]);
+
+export const buildTotalFormulaValues = ({
+  startRow,
+  endRow,
+  nameColumn = 'C',
+  rawRange = 'Raw!$B$3:$CC$21',
+  rawTotalColumnIndex = 2,
+}) => Array.from({ length: endRow - startRow + 1 }, (_, index) => {
+  const row = startRow + index;
+  return [`=VLOOKUP($${nameColumn}${row}, ${rawRange}, ${rawTotalColumnIndex}, FALSE)`];
+});
+
+export const REGULAR_LEADERBOARD_POINT_INDEXES = [
+  7, 12, 17, 22, // Weeks 1-4
+  28, // Major points
+  33, 38, 43, 48, 53, 58, 63, 68, // Weeks 5-12
+];
+
+export const buildWeeklyPointFormulaValues = ({
+  startRow,
+  endRow,
+  nameColumn = 'C',
+  rawRange = 'Raw!$B$3:$CC$21',
+  pointIndexes = REGULAR_LEADERBOARD_POINT_INDEXES,
+}) => Array.from({ length: endRow - startRow + 1 }, (_, index) => {
+  const row = startRow + index;
+  return pointIndexes.map((pointIndex) => `=VLOOKUP($${nameColumn}${row}, ${rawRange}, ${pointIndex}, FALSE)`);
+});

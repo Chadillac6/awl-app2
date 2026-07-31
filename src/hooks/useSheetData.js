@@ -50,8 +50,13 @@ export const useSheetData = ({ url, cacheKey, parser, fallbackData }) => {
   const [lastUpdated, setLastUpdated] = useState(null);
   const isOnline = useOnlineStatus();
   const previousOnlineRef = useRef(isOnline);
+  const activeRequestRef = useRef(null);
 
   const load = useCallback(async ({ silent = false } = {}) => {
+    activeRequestRef.current?.abort();
+    const controller = new AbortController();
+    activeRequestRef.current = controller;
+
     if (silent) setRefreshing(true);
     else setLoading(true);
 
@@ -67,24 +72,30 @@ export const useSheetData = ({ url, cacheKey, parser, fallbackData }) => {
     }
 
     try {
-      const raw = await fetchTextWithRetry(url);
+      const raw = await fetchTextWithRetry(url, { signal: controller.signal });
       const parsed = parser(raw);
+      if (controller.signal.aborted) return;
       setData(parsed);
       setError(null);
       setIsStale(false);
       setLastUpdated(Date.now());
       writeCache(cacheKey, raw);
     } catch {
+      if (controller.signal.aborted) return;
       if (!cached) setError(isOnline ? 'Unable to load live data right now.' : 'You appear to be offline.');
       else setError(isOnline ? 'Showing last saved data while live refresh is unavailable.' : 'Offline — showing last saved data.');
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+        setRefreshing(false);
+      }
+      if (activeRequestRef.current === controller) activeRequestRef.current = null;
     }
   }, [cacheKey, isOnline, parser, url]);
 
   useEffect(() => {
     load();
+    return () => activeRequestRef.current?.abort();
   }, [load]);
 
   useEffect(() => {
