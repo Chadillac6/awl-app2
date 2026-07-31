@@ -96,29 +96,29 @@ test('scoreSubmittedPlayers splits tied places across available point slots', ()
     { player: 'Chad', points: 3 },
     { player: 'Carp', points: 1 },
   ]);
-  assert.equal(result.requiresTieConfirmation, true);
+  assert.equal(result.requiresTieConfirmation, false);
 });
 
-test('buildWritePlan forwards requireTieConfirmation to the group state', () => {
+test('normal weekly ties split automatically unless confirmation is explicitly requested', () => {
   const tied = [
     { player: 'Chuck', netScore: 40, rawScore: 50, handicap: 10 },
     { player: 'Chad', netScore: 40, rawScore: 50, handicap: 10 },
   ];
 
+  const automatic = buildWritePlan({
+    weekNumber: 1,
+    roster: ['Chuck', 'Chad'],
+    submittedScores: tied,
+  });
+  assert.equal(automatic.group.requiresTieConfirmation, false);
+
   const gated = buildWritePlan({
     weekNumber: 1,
     roster: ['Chuck', 'Chad'],
     submittedScores: tied,
+    requireTieConfirmation: true,
   });
   assert.equal(gated.group.requiresTieConfirmation, true);
-
-  const ungated = buildWritePlan({
-    weekNumber: 1,
-    roster: ['Chuck', 'Chad'],
-    submittedScores: tied,
-    requireTieConfirmation: false,
-  });
-  assert.equal(ungated.group.requiresTieConfirmation, false);
 });
 
 test('buildRoundPreview forwards requireTieConfirmation to the group state', () => {

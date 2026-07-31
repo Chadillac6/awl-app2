@@ -104,9 +104,17 @@ export const mergeExistingAndExtractedScorecardPlayers = ({
   extractedPlayers.forEach((player, index) => {
     const sourceName = pickFirstDefined(player.player, player.name, player.displayName, player.birdiesName);
     const sheetName = resolveSheetName(sourceName, aliasMap);
+    const playerKey = normalizeName(sheetName);
+    const existingPlayer = mergedByPlayer.get(playerKey);
+    const incomingBirdies = pickFirstDefined(player.birdies, player.birdieCount);
     mergedByPlayer.set(normalizeName(sheetName), {
+      ...existingPlayer,
       ...player,
       player: sheetName,
+      // Scorecard OCR may omit birdies even when the sheet already contains a
+      // verified count. Preserve it unless the incoming payload explicitly
+      // supplies a replacement (including zero).
+      birdies: incomingBirdies ?? existingPlayer?.birdies,
       rowOrder: pickRowOrder(player) ?? (existingPlayers.length + index + 1),
       source: 'scorecard',
     });
@@ -123,7 +131,7 @@ export const buildScreenshotIngestionPreview = ({
   extractedPlayers,
   defaultBirdies = 0,
   finalizeMissingPlayers = false,
-  requireTieConfirmation = true,
+  requireTieConfirmation = false,
 } = {}) => {
   const { aliasMap, rowMap } = buildSheetPlayerMaps(sheetValues);
   const columns = parseWeekColumnsFromSheetValues(sheetValues, weekNumber);

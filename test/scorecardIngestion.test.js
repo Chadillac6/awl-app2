@@ -102,3 +102,21 @@ test('existing week scores merge with new scorecard rows so group points are rec
     { player: 'Ian', netScore: 44, points: 0, birdies: 0 },
   ]);
 });
+
+test('re-ingestion preserves verified birdies when OCR omits them and accepts explicit zero', () => {
+  const existingPlayers = [
+    { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, birdies: 2, rowOrder: 1 },
+    { player: 'Jared', rawScore: 40, handicap: 14, netScore: 35, birdies: 1, rowOrder: 2 },
+  ];
+
+  const merged = mergeExistingAndExtractedScorecardPlayers({
+    existingPlayers,
+    extractedPlayers: [
+      { player: 'Josh', rawScore: 39, handicap: 8, netScore: 36, rowIndex: 1 },
+      { player: 'Jared', rawScore: 40, handicap: 14, netScore: 35, birdies: 0, rowIndex: 2 },
+    ],
+  });
+
+  assert.equal(merged.find(({ player }) => player === 'Josh').birdies, 2);
+  assert.equal(merged.find(({ player }) => player === 'Jared').birdies, 0);
+});
