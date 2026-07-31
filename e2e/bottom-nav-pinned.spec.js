@@ -8,6 +8,20 @@ const leaderboardCsv = [
   ]),
 ].join('\n');
 
+const scheduleCsv = [
+  ',,2026 SCHEDULE B,,,',
+  ',,Group A,Group B,Group C,Group D',
+  ...Array.from({ length: 12 }, (_, i) => [i + 1, `12-${i + 1}`, 'Bob O Link', 'Bob O Link', 'Hilliard', 'Hilliard'].join(',')),
+].join('\n');
+
+const statsCsv = [
+  ',,,1,,,,',
+  '18Birdies Name,Spreadsheet Name,Total Pts,Score,Hdcp,Net,Birdies,Pts (4)',
+  ...Array.from({ length: 20 }, (_, i) => `Player ${i} X.,Player ${i},4,40,10,35,1,4`),
+  ',,,Total Gross,Avg Gross,Total Net,Avg Net,Avg Pts,Avg Hdcp,Birdies,Missed Week',
+  ...Array.from({ length: 20 }, (_, i) => `,,Player ${i},40,40,35,35,4,10,1,0`),
+].join('\n');
+
 const championshipCsv = [
   'AWL CHAMPIONSHIP WEEKEND 2026',
   '',
@@ -48,6 +62,8 @@ const expectNavPinnedToViewportBottom = async (page) => {
 test.describe('bottom navigation stays glued to the viewport bottom', () => {
   test.beforeEach(async ({ page }) => {
     await page.route('**/api/sheets/leaderboard', (route) => route.fulfill({ status: 200, contentType: 'text/csv', body: leaderboardCsv }));
+    await page.route('**/api/sheets/schedule', (route) => route.fulfill({ status: 200, contentType: 'text/csv', body: scheduleCsv }));
+    await page.route('**/api/sheets/stats', (route) => route.fulfill({ status: 200, contentType: 'text/csv', body: statsCsv }));
     await page.route('**/championship-preview.csv', (route) => route.fulfill({ status: 200, contentType: 'text/csv', body: championshipCsv }));
   });
 
@@ -78,6 +94,8 @@ test.describe('bottom navigation stays glued to the viewport bottom', () => {
       await page.goto('/');
       await page.waitForTimeout(4100);
       await page.getByRole('button', { name: tab }).click();
+      await page.waitForTimeout(500);
+      expect(await page.locator('#main-content').evaluate((el) => el.scrollHeight > el.clientHeight), `${tab} content should overflow the scroll container`).toBe(true);
 
       await expectNavPinnedToViewportBottom(page);
       await scrollMainToBottom(page);
