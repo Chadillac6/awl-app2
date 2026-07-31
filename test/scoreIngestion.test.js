@@ -99,6 +99,43 @@ test('scoreSubmittedPlayers splits tied places across available point slots', ()
   assert.equal(result.requiresTieConfirmation, true);
 });
 
+test('buildWritePlan forwards requireTieConfirmation to the group state', () => {
+  const tied = [
+    { player: 'Chuck', netScore: 40, rawScore: 50, handicap: 10 },
+    { player: 'Chad', netScore: 40, rawScore: 50, handicap: 10 },
+  ];
+
+  const gated = buildWritePlan({
+    weekNumber: 1,
+    roster: ['Chuck', 'Chad'],
+    submittedScores: tied,
+  });
+  assert.equal(gated.group.requiresTieConfirmation, true);
+
+  const ungated = buildWritePlan({
+    weekNumber: 1,
+    roster: ['Chuck', 'Chad'],
+    submittedScores: tied,
+    requireTieConfirmation: false,
+  });
+  assert.equal(ungated.group.requiresTieConfirmation, false);
+});
+
+test('buildRoundPreview forwards requireTieConfirmation to the group state', () => {
+  const tied = [
+    { player: 'Chuck', netScore: 40, rawScore: 50, handicap: 10 },
+    { player: 'Chad', netScore: 40, rawScore: 50, handicap: 10 },
+  ];
+
+  const preview = buildRoundPreview({
+    weekNumber: 1,
+    roster: ['Chuck', 'Chad'],
+    submittedScores: tied,
+    requireTieConfirmation: false,
+  });
+  assert.equal(preview.group.requiresTieConfirmation, false);
+});
+
 test('buildGroupScoreState leaves missing players pending until finalized', () => {
   const result = buildGroupScoreState({
     groupName: 'group1',

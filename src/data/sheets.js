@@ -1,11 +1,6 @@
-const SHEET_BASE = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQYDHpV6_tlPDxHOZXV4SBIekDi0DJgeMjqufVC2WEmmtQ5UMP-M8Bfb_u6qRe1t6kg8uv9EpsJupLg/pub';
-const sheetURL = (gid) => `${SHEET_BASE}?gid=${gid}&single=true&output=csv`;
+import { APP_SHEET_CSV_URLS, PUBLISHED_SHEET_CSV_URLS } from './sheetSources.js';
 
-export const SHEETS_URLS = {
-  schedule: sheetURL('900398120'),
-  leaderboard: sheetURL('483982929'),
-  stats: sheetURL('1427498880'),
-};
+export const SHEETS_URLS = typeof window === 'undefined' ? PUBLISHED_SHEET_CSV_URLS : APP_SHEET_CSV_URLS;
 
 export const defaultWeekHeaders = ['1', '2', '3', '4', 'S.O.', '5', '6', '7', '8', '9', '10', '11', '12'];
 
@@ -19,6 +14,8 @@ const safeText = (value) => String(value ?? '').trim();
 const normalizeBirdieKingName = (rawName) => {
   const cleaned = safeText(rawName).replace(/^Birdie King:\s*/i, '').replace(/\s+/g, ' ').trim();
   if (!cleaned) return '—';
+
+  if (/\s+(?:&|and)\s+/i.test(cleaned) || cleaned.includes(',')) return cleaned;
 
   const tokens = cleaned.split(' ').filter(Boolean);
   if (tokens.length >= 4) return 'Many';
@@ -82,11 +79,14 @@ export const parseCSV = (csvText) => {
 };
 
 export const fetchTextWithRetry = async (url, options = {}) => {
-  const { attempts = 3, timeoutMs = 8000 } = options;
+  const { attempts = 3, timeoutMs = 8000, signal } = options;
   let lastError;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    if (signal?.aborted) throw signal.reason ?? new DOMException('Request aborted', 'AbortError');
     const controller = new AbortController();
+    const abortFromCaller = () => controller.abort(signal.reason);
+    signal?.addEventListener('abort', abortFromCaller, { once: true });
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
@@ -98,9 +98,11 @@ export const fetchTextWithRetry = async (url, options = {}) => {
       return await response.text();
     } catch (error) {
       lastError = error;
+      if (signal?.aborted) throw signal.reason ?? error;
       if (attempt < attempts) await new Promise((resolve) => setTimeout(resolve, 350 * attempt));
     } finally {
       clearTimeout(timeoutId);
+      signal?.removeEventListener('abort', abortFromCaller);
     }
   }
 
@@ -141,14 +143,33 @@ export const parseScheduleCSV = (csvText) => {
     const displayDate = `${monthNames[month - 1]} ${day}`;
 
     if (isSpecialEvent) {
+      const eventName = groupA.trim();
+      const normalizedEventName = eventName.toLowerCase();
+      const allGroups = ['A', 'B', 'C', 'D'];
+      const isSeneca = normalizedEventName.includes('seneca');
+      const isChampionship = normalizedEventName.includes('championship');
+      const eventDate = isSeneca
+        ? new Date(currentYear, 4, 30)
+        : isChampionship
+          ? new Date(currentYear, 7, 8)
+          : roundDate;
+      const eventCourses = isChampionship
+        ? [
+            { name: 'Shawnee Hills', date: 'Aug 8', groups: allGroups },
+            { name: 'Shale Creek', date: 'Aug 9', groups: allGroups },
+          ]
+        : [{ name: isSeneca ? 'Seneca Open' : eventName, date: isSeneca ? 'May 30' : displayDate, groups: allGroups }];
+
       schedule.push({
-        week: weekNum || 'EVENT',
-        date: displayDate,
-        status: isCompleted ? 'completed' : 'upcoming',
+        week: weekNum || (isChampionship ? 'CHAMPIONSHIP' : 'EVENT'),
+        date: isSeneca ? 'May 30' : isChampionship ? 'Aug 8' : displayDate,
+        endDate: isChampionship ? 'Aug 9' : null,
+        status: eventDate < today ? 'completed' : 'upcoming',
         isSpecialEvent: true,
-        eventName: groupA,
-        course1: { name: groupA, groups: ['A', 'B', 'C', 'D'] },
-        course2: null,
+        eventName: isSeneca ? 'Seneca Open' : isChampionship ? 'Championship' : eventName,
+        courses: eventCourses,
+        course1: eventCourses[0],
+        course2: eventCourses[1] ?? null,
       });
       continue;
     }
@@ -161,17 +182,93 @@ export const parseScheduleCSV = (csvText) => {
     });
 
     const courseNames = Object.keys(courses);
+    const courseList = courseNames.map((name) => ({ name, groups: courses[name] }));
     schedule.push({
       week: weekNum,
       date: displayDate,
       status: isCompleted ? 'completed' : 'upcoming',
       isSpecialEvent: false,
-      course1: courseNames[0] ? { name: courseNames[0], groups: courses[courseNames[0]] } : null,
-      course2: courseNames[1] ? { name: courseNames[1], groups: courses[courseNames[1]] } : null,
+      courses: courseList,
+      course1: courseList[0] ?? null,
+      course2: courseList[1] ?? null,
     });
   }
 
   return schedule;
+};
+
+const findSection = (rows, label) => rows.findIndex((row) => safeText(row[0]).toUpperCase() === label);
+const isBlankRow = (row = []) => row.every((cell) => safeText(cell) === '');
+const optionalNumber = (value) => {
+  const parsed = Number.parseFloat(String(value ?? '').replace(/[^\d.-]/g, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+export const parseChampionshipCSV = (csvText) => {
+  const rows = parseCSV(csvText);
+  const eventsStart = findSection(rows, 'WEEKEND EVENTS');
+  const rulesStart = findSection(rows, 'CHAMPIONSHIP RULES');
+  const groupsStart = findSection(rows, 'GROUPINGS & TEE TIMES');
+  const leaderboardStart = findSection(rows, 'CHAMPIONSHIP LEADERBOARD');
+  const controlsStart = findSection(rows, 'MODE & NOTIFICATION CONTROLS');
+
+  const sectionRows = (start, next) => {
+    if (start < 0) return [];
+    return rows.slice(start + 2, next < 0 ? rows.length : next).filter((row) => !isBlankRow(row));
+  };
+
+  const events = sectionRows(eventsStart, rulesStart).map((row) => ({
+    name: safeText(row[0]),
+    date: safeText(row[1]),
+    time: safeText(row[2]),
+    venue: safeText(row[3]),
+    address: safeText(row[4]),
+    details: safeText(row[5]),
+  })).filter((event) => event.name);
+
+  const rules = sectionRows(rulesStart, groupsStart).map((row) => ({
+    number: safeText(row[0]),
+    name: safeText(row[1]),
+    text: safeText(row[2]),
+  })).filter((rule) => rule.name || rule.text);
+
+  const groups = sectionRows(groupsStart, leaderboardStart).map((row) => ({
+    name: safeText(row[0]),
+    teeTime: safeText(row[1]),
+    players: row.slice(2, 6).map(safeText).filter(Boolean),
+    notes: safeText(row[6]),
+  })).filter((group) => group.name && group.players.length);
+
+  const groupOrder = new Map(groups.flatMap((group, groupIndex) => group.players.map((name, playerIndex) => [
+    name.toLowerCase(),
+    (groupIndex * 4) + playerIndex,
+  ])));
+  const leaderboard = sectionRows(leaderboardStart, controlsStart).map((row) => ({
+    position: optionalNumber(row[0]),
+    name: safeText(row[1]),
+    group: safeText(row[2]),
+    round1Net: optionalNumber(row[3]),
+    round2Net: optionalNumber(row[4]),
+    weekendNet: optionalNumber(row[5]),
+    grossTotal: optionalNumber(row[6]),
+    notes: safeText(row[7]),
+  })).filter((player) => player.name);
+
+  leaderboard.sort((a, b) => {
+    const aScored = Number.isFinite(a.weekendNet) || Number.isFinite(a.round1Net);
+    const bScored = Number.isFinite(b.weekendNet) || Number.isFinite(b.round1Net);
+    if (aScored !== bScored) return aScored ? -1 : 1;
+    const aScore = a.weekendNet ?? a.round1Net ?? Infinity;
+    const bScore = b.weekendNet ?? b.round1Net ?? Infinity;
+    if (aScore !== bScore) return aScore - bScore;
+    return (groupOrder.get(a.name.toLowerCase()) ?? 999) - (groupOrder.get(b.name.toLowerCase()) ?? 999);
+  });
+
+  const controls = Object.fromEntries(sectionRows(controlsStart, -1)
+    .map((row) => [safeText(row[0]), safeText(row[1])])
+    .filter(([key]) => key));
+
+  return { events, rules, groups, leaderboard, controls };
 };
 
 export const parseLeaderboardCSV = (csvText) => {
@@ -266,9 +363,131 @@ export const parseLeaderboardCSV = (csvText) => {
   return { leaderboard, leagueStats, weekHeaders };
 };
 
+const isNumericCell = (value) => {
+  const text = safeText(value);
+  if (!text) return false;
+  return Number.isFinite(parseFloat(text));
+};
+
+const formatWeekLabel = (week) => {
+  const text = safeText(week);
+  if (text.toLowerCase() === 'major') return 'Seneca';
+  return `Week ${text}`;
+};
+
+const splitRecordNames = (value) => safeText(value)
+  .split(/\s*(?:&|,|\band\b)\s*/i)
+  .map((name) => name.trim())
+  .filter(Boolean);
+
+const joinRecordNames = (names) => names.join(' & ');
+
+const addUniqueName = (names, nextName) => {
+  const normalizedNext = safeText(nextName);
+  if (!normalizedNext) return;
+  const exists = names.some((name) => name.toLowerCase() === normalizedNext.toLowerCase());
+  if (!exists) names.push(normalizedNext);
+};
+
+const addGrossTiePlayers = (record, weeklyStatsByWeek) => {
+  if (!record?.score || !weeklyStatsByWeek) return record;
+
+  const tiedPlayers = [];
+  Object.values(weeklyStatsByWeek).forEach((week) => {
+    if (week?.isMajor) return;
+    (week?.players ?? []).forEach((player) => {
+      if (parseNumber(player?.gross, NaN) === record.score) addUniqueName(tiedPlayers, player.player);
+    });
+  });
+
+  if (tiedPlayers.length === 0) return record;
+
+  const namedPlayers = splitRecordNames(record.player);
+  const combined = [];
+  tiedPlayers.forEach((name) => addUniqueName(combined, name));
+  namedPlayers.forEach((name) => addUniqueName(combined, name));
+
+  return { ...record, player: joinRecordNames(combined) };
+};
+
+const buildWeeklyStats = (rows = []) => {
+  const weekRow = rows[0] ?? [];
+  const headerRow = rows[1] ?? [];
+  const playerRows = rows.slice(2).filter((row) => safeText(row[0]) && safeText(row[1]));
+  const starts = [];
+
+  for (let index = 3; index < weekRow.length; index += 1) {
+    const week = safeText(weekRow[index]);
+    if (week) starts.push({ week, startIndex: index });
+  }
+
+  const weekOptions = [];
+  const weeklyStatsByWeek = {};
+
+  starts.forEach((entry, idx) => {
+    const endIndex = starts[idx + 1]?.startIndex ?? headerRow.length;
+    const blockHeaders = headerRow.slice(entry.startIndex, endIndex).map((cell) => safeText(cell).toLowerCase());
+    const findOffset = (...labels) => blockHeaders.findIndex((header) => labels.includes(header));
+    const isMajor = entry.week.toLowerCase() === 'major' || findOffset('rd1') !== -1;
+
+    const scoreOffset = findOffset('score');
+    const hdcpOffset = findOffset('hdcp', 'handicap');
+    const netOffset = findOffset('net');
+    const birdiesOffset = findOffset('birdies');
+    const pointsOffset = blockHeaders.findIndex((header) => header.startsWith('pts'));
+    const rd1Offset = findOffset('rd1');
+    const rd2Offset = findOffset('rd2');
+    const totalOffset = findOffset('total');
+
+    const primaryScoreOffset = isMajor ? totalOffset : scoreOffset;
+    if (primaryScoreOffset === -1) return;
+
+    const hasScores = playerRows.some((row) => isNumericCell(row[entry.startIndex + primaryScoreOffset]));
+    if (!hasScores) return;
+
+    const value = entry.week.toLowerCase() === 'major' ? 'major' : entry.week;
+    const label = formatWeekLabel(entry.week);
+    weekOptions.push({ value, label, isMajor });
+
+    const readNumber = (row, offset) => (offset === -1 ? 0 : parseNumber(row[entry.startIndex + offset]));
+    const readInteger = (row, offset) => (offset === -1 ? 0 : parseInt(row[entry.startIndex + offset], 10) || 0);
+
+    weeklyStatsByWeek[value] = {
+      value,
+      label,
+      isMajor,
+      players: playerRows.map((row) => {
+        const base = { player: safeText(row[1]) };
+        if (isMajor) {
+          return {
+            ...base,
+            rd1: readNumber(row, rd1Offset),
+            rd2: readNumber(row, rd2Offset),
+            total: readNumber(row, totalOffset),
+            birdies: readInteger(row, birdiesOffset),
+            points: readNumber(row, pointsOffset),
+          };
+        }
+
+        return {
+          ...base,
+          gross: readNumber(row, scoreOffset),
+          hdcp: readNumber(row, hdcpOffset),
+          net: readNumber(row, netOffset),
+          birdies: readInteger(row, birdiesOffset),
+          points: readNumber(row, pointsOffset),
+        };
+      }),
+    };
+  });
+
+  return { weekOptions, weeklyStatsByWeek };
+};
+
 export const parseStatsCSV = (csvText) => {
   const rows = parseCSV(csvText);
   const statsData = [];
+  const { weekOptions, weeklyStatsByWeek } = buildWeeklyStats(rows);
   let lowestNetRecord = null;
   let lowestGrossRecord = null;
   let mostBirdiesRecord = null;
@@ -280,7 +499,7 @@ export const parseStatsCSV = (csvText) => {
       break;
     }
   }
-  if (headerRowIndex === -1) return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord };
+  if (headerRowIndex === -1) return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord, weekOptions, weeklyStatsByWeek };
 
   const headerRow = rows[headerRowIndex];
   const totalGrossIdx = headerRow.findIndex((cell) => safeText(cell).toLowerCase() === 'total gross');
@@ -328,8 +547,8 @@ export const parseStatsCSV = (csvText) => {
   };
 
   lowestNetRecord = extractNamedScore('lowest net');
-  lowestGrossRecord = extractNamedScore('lowest gross');
+  lowestGrossRecord = addGrossTiePlayers(extractNamedScore('lowest gross'), weeklyStatsByWeek);
   mostBirdiesRecord = extractNamedScore('most birdies');
 
-  return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord };
+  return { players: statsData, lowestNetRecord, lowestGrossRecord, mostBirdiesRecord, weekOptions, weeklyStatsByWeek };
 };

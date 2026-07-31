@@ -2,7 +2,7 @@ import React from 'react';
 import { colors } from '../themeTokens.js';
 
 export const LoadingState = ({ label = 'Loading...' }) => (
-  <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+  <div role="status" aria-live="polite" style={{ padding: '40px 16px', textAlign: 'center' }}>
     <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 16 }}>
       {[0, 1, 2].map((i) => (
         <div key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: colors.green, animation: `bounce 1.4s ease-in-out ${i * 0.16}s infinite` }} />
@@ -13,7 +13,7 @@ export const LoadingState = ({ label = 'Loading...' }) => (
 );
 
 export const ErrorState = ({ message, onRetry, hasCachedData = false }) => (
-  <div style={{ padding: '24px 16px' }}>
+  <div role="alert" style={{ padding: '24px 16px' }}>
     <div style={{ background: colors.offWhite, border: `1px solid ${colors.offWhiteMuted}`, borderRadius: 16, padding: 16, textAlign: 'center' }}>
       <p style={{ fontWeight: 700, color: colors.greenDark, marginBottom: 6 }}>Data issue</p>
       <p style={{ color: colors.textMuted, fontSize: 14, lineHeight: 1.5 }}>{message}</p>
@@ -35,7 +35,7 @@ export const DataBanner = ({ error, isStale, lastUpdated, isOnline, refreshing, 
     : null;
 
   return (
-    <div style={{ margin: '0 16px 16px', background: colors.offWhite, borderRadius: 14, border: `1px solid ${colors.offWhiteMuted}`, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+    <div role="status" aria-live="polite" style={{ margin: '0 16px 16px', background: colors.offWhite, borderRadius: 14, border: `1px solid ${colors.offWhiteMuted}`, padding: '12px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
       <div>
         <p style={{ fontSize: 12, fontWeight: 700, color: isOnline ? colors.greenDark : colors.yellow }}> {isOnline ? (isStale ? 'Live refresh delayed' : 'Connected') : 'Offline mode'} </p>
         <p style={{ fontSize: 12, color: colors.textMuted, lineHeight: 1.5 }}>

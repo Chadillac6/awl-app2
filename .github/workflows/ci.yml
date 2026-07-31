@@ -2,17 +2,28 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test-build:
+  quality:
+    name: Quality gate
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Use Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22.22.0
           cache: npm
@@ -26,5 +37,19 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Browser regression tests
+        run: npm run test:e2e
+
       - name: Build
         run: npm run build
+
+      - name: Upload browser report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

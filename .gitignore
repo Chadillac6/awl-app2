@@ -25,3 +25,17 @@ dist-ssr
 
 # Local Netlify folder
 .netlify
+
+# Local agent and test artifacts
+.brv/
+.learnings/
+test-results/
+playwright-report/
+
+# Secrets and local environment overrides
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*service-account*.json

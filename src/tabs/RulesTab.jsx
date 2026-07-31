@@ -56,12 +56,12 @@ export const RulesTab = () => {
   return (
     <div style={{ padding: '0 16px 100px' }}>
       <div style={{ position: 'relative', marginBottom: 20 }}>
-        <input type="text" placeholder="Search rules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: 14, border: `2px solid ${colors.green}`, background: colors.offWhite, color: colors.greenDark, fontSize: 16, outline: 'none' }} />
+        <input type="search" aria-label="Search league rules" placeholder="Search rules..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '14px 16px 14px 44px', borderRadius: 14, border: `2px solid ${colors.green}`, background: colors.offWhite, color: colors.greenDark, fontSize: 16 }} />
         <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: colors.textMuted, fontSize: 18 }}>&#128269;</span>
       </div>
       <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
         {categories.map((cat) => (
-          <button key={cat} type="button" onClick={() => setActiveCategory(activeCategory === cat ? null : cat)} style={{ flex: 1, padding: '12px 16px', borderRadius: 12, border: `1px solid ${activeCategory === cat ? colors.green : colors.offWhiteMuted}`, background: activeCategory === cat ? colors.green : colors.offWhite, color: activeCategory === cat ? colors.offWhite : colors.greenDark, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: activeCategory === cat ? 'none' : '0 2px 8px rgba(0,0,0,0.08)' }}><span>{getCategoryIcon(cat)}</span>{cat}</button>
+          <button key={cat} type="button" aria-pressed={activeCategory === cat} onClick={() => setActiveCategory(activeCategory === cat ? null : cat)} style={{ flex: 1, padding: '12px 16px', borderRadius: 12, border: `1px solid ${activeCategory === cat ? colors.green : colors.offWhiteMuted}`, background: activeCategory === cat ? colors.green : colors.offWhite, color: activeCategory === cat ? colors.offWhite : colors.greenDark, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: activeCategory === cat ? 'none' : '0 2px 8px rgba(0,0,0,0.08)' }}><span aria-hidden="true">{getCategoryIcon(cat)}</span>{cat}</button>
         ))}
       </div>
       <p style={{ fontSize: 12, color: colors.textMuted, marginBottom: 12, fontWeight: 500 }}>Showing {filteredRules.length} rule{filteredRules.length !== 1 ? 's' : ''}{activeCategory && ` in ${activeCategory}`}</p>

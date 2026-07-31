@@ -192,6 +192,18 @@ export const historicalData = {
   ],
   senecaOpens: [
     {
+      year: 2026,
+      format: 'Teams - Scramble, Team Stroke Play & Alt Shot',
+      results: [
+        { place: 1, name: 'Josh Houser & Jon Faro', score: '+15' },
+        { place: 2, name: 'Chad Supers & Jared Fritz', score: '+16' },
+        { place: 3, name: 'James Stephens & Chuck Martin', score: '+18' },
+        { place: 4, name: "Richie Baker & Ian O'Neil", score: '+23' },
+        { place: 5, name: 'Nick Carpenter & Jake Taylor', score: '+26' },
+        { place: 6, name: 'Sean Housel & Glen Morrison', score: '+33' },
+      ]
+    },
+    {
       year: 2025,
       format: 'Teams - Best Ball, Shamble & Alt Shot',
       results: [

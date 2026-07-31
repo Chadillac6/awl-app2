@@ -23,8 +23,13 @@ export const LeaderboardTab = () => {
   const groups = ['groupA', 'groupB', 'groupC', 'groupD'];
   const groupLabels = { groupA: 'Group A', groupB: 'Group B', groupC: 'Group C', groupD: 'Group D' };
   const headers = weekHeaders.length > 0 ? weekHeaders.map((h) => (h === 'Major' ? 'S.O.' : h)) : defaultWeekHeaders;
-  const gridTemplate = `28px 70px 50px repeat(${headers.length}, 36px)`;
-  const minTableWidth = 150 + (headers.length * 36);
+  const rankColumnWidth = 28;
+  const playerColumnWidth = 70;
+  const totalColumnWidth = 50;
+  const rowGutter = 8;
+  const pinnedWidth = rankColumnWidth + playerColumnWidth + totalColumnWidth;
+  const gridTemplate = `${rankColumnWidth}px ${playerColumnWidth}px ${totalColumnWidth}px repeat(${headers.length}, 36px)`;
+  const minTableWidth = pinnedWidth + (headers.length * 36);
 
   return (
     <div style={{ padding: '0 16px 100px' }}>
@@ -37,25 +42,25 @@ export const LeaderboardTab = () => {
       </div>
 
       <div style={{ background: colors.offWhite, borderRadius: 16, overflow: 'hidden', border: `2px solid ${colors.green}`, marginBottom: 20 }}>
-        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+        <div data-testid="leaderboard-scroll" style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           <div style={{ minWidth: minTableWidth }}>
             <div style={{ display: 'grid', gridTemplateColumns: gridTemplate, padding: '10px 8px', background: colors.green, position: 'sticky', top: 0, zIndex: 10 }}>
-              <div style={headerCell}>#</div>
-              <div style={headerCell}>Player</div>
-              <div style={{ ...headerCell, textAlign: 'center' }}>Tot</div>
+              <div data-testid="leaderboard-sticky-rank-header" style={{ ...headerCell, ...stickyCell(rowGutter, colors.green, 30) }}>#</div>
+              <div data-testid="leaderboard-sticky-player-header" style={{ ...headerCell, ...stickyCell(rowGutter + rankColumnWidth, colors.green, 30) }}>Player</div>
+              <div data-testid="leaderboard-sticky-total-header" style={{ ...headerCell, ...stickyCell(rowGutter + rankColumnWidth + playerColumnWidth, colors.green, 31), ...stickyDivider, textAlign: 'center' }}>Tot</div>
               {headers.map((w) => <div key={w} style={{ ...headerCell, textAlign: 'center', color: w === 'S.O.' ? colors.yellow : colors.offWhiteMuted, fontWeight: w === 'S.O.' ? 700 : 400 }}>{w}</div>)}
             </div>
 
             {groups.map((groupKey) => (
               <React.Fragment key={groupKey}>
-                <div style={{ padding: '8px 12px', background: colors.offWhiteMuted, borderTop: `1px solid ${colors.green}20` }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: colors.green, textTransform: 'uppercase', letterSpacing: 1 }}>{groupLabels[groupKey]}</span>
+                <div style={{ padding: '8px 12px', background: colors.offWhiteMuted, borderTop: `1px solid ${colors.green}20`, position: 'relative' }}>
+                  <span data-testid={`leaderboard-group-${groupKey}`} style={{ ...stickyCell(0, colors.offWhiteMuted, 20), width: pinnedWidth, display: 'inline-flex', alignItems: 'center', paddingLeft: 12, fontSize: 11, fontWeight: 700, color: colors.green, textTransform: 'uppercase', letterSpacing: 1 }}>{groupLabels[groupKey]}</span>
                 </div>
                 {(leaderboard[groupKey] || []).map((player, idx) => (
-                  <div key={player.name} style={{ display: 'grid', gridTemplateColumns: gridTemplate, padding: '8px 8px', borderBottom: `1px solid ${colors.offWhiteMuted}`, background: idx % 2 === 0 ? 'white' : colors.offWhite, alignItems: 'center' }}>
-                    <div style={{ width: 20, height: 20, borderRadius: '50%', background: idx === 0 ? colors.yellow : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : colors.offWhiteMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: colors.greenDark }}>{player.rank}</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: colors.greenDark }}>{player.name}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: colors.green, textAlign: 'center' }}>{player.total}</div>
+                  <div key={player.name} data-testid="leaderboard-player-row" style={{ display: 'grid', gridTemplateColumns: gridTemplate, padding: '8px 8px', borderBottom: `1px solid ${colors.offWhiteMuted}`, background: idx % 2 === 0 ? 'white' : colors.offWhite, alignItems: 'center' }}>
+                    <div data-testid="leaderboard-sticky-rank" style={{ ...stickyCell(rowGutter, idx % 2 === 0 ? 'white' : colors.offWhite, 20), width: 20, height: 20, borderRadius: '50%', background: idx === 0 ? colors.yellow : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : colors.offWhiteMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: colors.greenDark }}>{player.rank}</div>
+                    <div data-testid="leaderboard-sticky-player" style={{ ...stickyCell(rowGutter + rankColumnWidth, idx % 2 === 0 ? 'white' : colors.offWhite, 20), fontSize: 12, fontWeight: 600, color: colors.greenDark }}>{player.name}</div>
+                    <div data-testid="leaderboard-sticky-total" style={{ ...stickyCell(rowGutter + rankColumnWidth + playerColumnWidth, idx % 2 === 0 ? 'white' : colors.offWhite, 21), ...stickyDivider, fontSize: 14, fontWeight: 700, color: colors.green, textAlign: 'center' }}>{player.total}</div>
                     {player.weeks.map((pts, i) => <div key={`${player.name}-${i}`} style={{ fontSize: 11, textAlign: 'center', color: pts >= 4 ? colors.green : pts === 0 ? colors.offWhiteMuted : colors.textDark, fontWeight: pts >= 4 ? 700 : 400 }}>{pts}</div>)}
                   </div>
                 ))}
@@ -89,6 +94,17 @@ export const LeaderboardTab = () => {
 };
 
 const headerCell = { fontSize: 9, color: colors.offWhiteMuted, textTransform: 'uppercase' };
+
+const stickyCell = (left, background, zIndex) => ({
+  position: 'sticky',
+  left,
+  zIndex,
+  background,
+});
+
+const stickyDivider = {
+  boxShadow: '8px 0 14px -12px rgba(10, 92, 46, 0.8)',
+};
 
 const StatCard = ({ title, value, subtitle }) => (
   <div style={{ background: colors.offWhite, borderRadius: 16, padding: 14, border: `2px solid ${colors.green}` }}>

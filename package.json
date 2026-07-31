@@ -11,8 +11,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test",
+    "test:e2e": "playwright test",
+    "check": "npm run lint && npm test && npm run test:e2e && npm run build",
     "push:secrets": "node scripts/generate-push-secrets.mjs",
     "notify:leaderboard": "node scripts/send-leaderboard-notification.mjs",
+    "birdie:update": "node scripts/update-birdie-king.mjs",
     "apps-script:deploy": "node scripts/deploy-apps-script.mjs",
     "apps-script:configure": "node scripts/configure-apps-script-push.mjs",
     "preview": "vite preview"
@@ -26,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.60.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
