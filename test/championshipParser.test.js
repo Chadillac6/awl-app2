@@ -9,7 +9,7 @@ const championshipCsv = [
   'WEEKEND EVENTS',
   'Event,Date,Start Time,Course / Venue,Address,Details',
   'Round One,8/8/2026,6:00 AM,Shawnee Hills,,',
-  'Final Round,8/9/2026,6:30 AM,Pleasant Valley Country Club,,',
+  'Final Round,8/9/2026,6:00 AM,Pleasant Valley Country Club,,',
   'AWL Awards Ceremony,8/9/2026,1:30 PM,Awards Ceremony,"13489 Lake Avenue, Lakewood, Ohio","Groups A & B: Bring appetizers · Groups C & D: Bring desserts"',
   '',
   'CHAMPIONSHIP RULES',
@@ -45,7 +45,7 @@ test('championship parser extracts all page sections and sorts lowest net first'
 
   assert.equal(parsed.events.length, 3);
   assert.equal(parsed.events[1].venue, 'Pleasant Valley Country Club');
-  assert.equal(parsed.events[1].time, '6:30 AM');
+  assert.equal(parsed.events[1].time, '6:00 AM');
   assert.equal(parsed.events[2].address, '13489 Lake Avenue, Lakewood, Ohio');
   assert.equal(parsed.events[2].details, 'Groups A & B: Bring appetizers · Groups C & D: Bring desserts');
   assert.equal(parsed.rules.length, 2);
