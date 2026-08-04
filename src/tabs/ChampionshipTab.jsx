@@ -44,6 +44,7 @@ const EventCard = ({ events }) => (
           <div>
             <strong style={{ color: colors.greenDark, fontSize: 14 }}>{ceremony ? event.name : event.venue}</strong>
             <p style={{ marginTop: 2, color: colors.textMuted, fontSize: 10 }}>{ceremony ? event.address : `${event.name}${event.details ? ` · ${event.details}` : ''}`}</p>
+            {ceremony && event.details && <p style={{ marginTop: 4, color: colors.greenDark, fontSize: 10, fontWeight: 700, lineHeight: 1.35 }}>{event.details}</p>}
           </div>
           <span style={{ padding: '7px 8px', borderRadius: 10, background: '#eef4ef', color: colors.greenDark, fontSize: 10, fontWeight: 700 }}>{normalizeTime(event.time)}</span>
         </div>

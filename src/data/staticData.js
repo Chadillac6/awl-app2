@@ -17,7 +17,7 @@ export const rulesData = [
   { id: 3, title: 'Championship Weekend', category: 'League Overview', bullets: [
     "Aug 8th & 9th - Championship weekend will be played together and finish with an awards ceremony at Chad's house on Sunday afternoon (members' wives and families are welcome)",
     'Saturday at Shawnee Hills (18 holes)',
-    'Sunday at Shale Creek (18 holes)',
+    'Sunday at Pleasant Valley Country Club (18 holes)',
     'The winner of championship weekend is the winner of the entire league',
   ]},
   { id: 4, title: 'Scores', category: 'League Overview', bullets: [
@@ -237,4 +237,3 @@ export const historicalData = {
 };
 
 // Player analytics data - now fetched from Google Sheets (see AnalyticsTab component)
-

@@ -1,8 +1,8 @@
 export const championshipFallback = {
   events: [
     { name: 'Round One', date: '8/8/2026', time: '6:00 AM', venue: 'Shawnee Hills', address: '', details: '' },
-    { name: 'Final Round', date: '8/9/2026', time: '6:00 AM', venue: 'Shale Creek', address: '', details: '' },
-    { name: 'AWL Awards Ceremony', date: '8/9/2026', time: '1:30 PM', venue: 'Awards Ceremony', address: '13489 Lake Avenue, Lakewood, Ohio', details: '' },
+    { name: 'Final Round', date: '8/9/2026', time: '6:30 AM', venue: 'Pleasant Valley Country Club', address: '', details: '' },
+    { name: 'AWL Awards Ceremony', date: '8/9/2026', time: '1:30 PM', venue: 'Awards Ceremony', address: '13489 Lake Avenue, Lakewood, Ohio', details: 'Groups A & B: Bring appetizers · Groups C & D: Bring desserts' },
   ],
   rules: [
     { number: '1', name: 'The Kevin Rule', text: 'No gimmies for birdies, pars, or bogeys during Championship Weekend.' },

@@ -47,6 +47,6 @@ test('parseScheduleCSV normalizes Seneca and the two-day championship like sched
   assert.equal(championship.endDate, 'Aug 9');
   assert.deepEqual(championship.courses.map(({ name, date }) => ({ name, date })), [
     { name: 'Shawnee Hills', date: 'Aug 8' },
-    { name: 'Shale Creek', date: 'Aug 9' },
+    { name: 'Pleasant Valley Country Club', date: 'Aug 9' },
   ]);
 });

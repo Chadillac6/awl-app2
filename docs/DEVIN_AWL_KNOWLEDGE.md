@@ -84,7 +84,7 @@ come from the Championship worksheet and may change until Chad confirms them.
 
 - Regular season: 12 weekly rounds, May 1 through July 31.
 - Seneca Open major: May 30, 27 holes, all 16 golfers together.
-- Championship Weekend: August 8 at Shawnee Hills and August 9 at Shale Creek.
+- Championship Weekend: August 8 at Shawnee Hills and August 9 at Pleasant Valley Country Club.
 - Awards ceremony: August 9 at 1:30 PM.
 
 Dates, venues, event copy, Championship groupings, and Championship rules should
