@@ -13,7 +13,7 @@ const CHAMPIONSHIP_PREVIEW_GAME = {
   status: 'upcoming',
   courses: [
     { name: 'Shawnee Hills', date: 'Saturday, Aug 8', groups: ['A', 'B', 'C', 'D'] },
-    { name: 'Shale Creek', date: 'Sunday, Aug 9 · 6:30 AM', groups: ['A', 'B', 'C', 'D'] },
+    { name: 'Pleasant Valley Country Club', date: 'Sunday, Aug 9 · 6:30 AM', groups: ['A', 'B', 'C', 'D'] },
   ],
 };
 

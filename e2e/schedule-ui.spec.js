@@ -38,7 +38,7 @@ test('Schedule UI renders all four groups for every regular week, including thre
   const championship = getWeekCard(page, 'CHAMPIONSHIP');
   await expect(championship.getByText('Championship', { exact: true })).toBeVisible();
   await expect(championship.getByText('Shawnee Hills', { exact: true })).toBeVisible();
-  await expect(championship.getByText('Shale Creek', { exact: true })).toBeVisible();
+  await expect(championship.getByText('Pleasant Valley Country Club', { exact: true })).toBeVisible();
   await expect(championship.getByText('Aug 8', { exact: true })).toBeVisible();
   await expect(championship.getByText('Aug 9', { exact: true })).toBeVisible();
 });

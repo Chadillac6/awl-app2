@@ -156,7 +156,7 @@ export const parseScheduleCSV = (csvText) => {
       const eventCourses = isChampionship
         ? [
             { name: 'Shawnee Hills', date: 'Aug 8', groups: allGroups },
-            { name: 'Shale Creek', date: 'Aug 9', groups: allGroups },
+            { name: 'Pleasant Valley Country Club', date: 'Aug 9', groups: allGroups },
           ]
         : [{ name: isSeneca ? 'Seneca Open' : eventName, date: isSeneca ? 'May 30' : displayDate, groups: allGroups }];
 
