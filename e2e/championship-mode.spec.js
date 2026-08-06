@@ -56,7 +56,7 @@ test('preview mode shows championship splash, page, sponsor, and unique tab', as
   await expect(page.getByText('Pleasant Valley Country Club', { exact: true })).toBeVisible();
   await expect(page.getByText('AWL Awards Ceremony', { exact: true })).toBeVisible();
   await expect(page.getByText('Groups A & B: Bring appetizers · Groups C & D: Bring desserts', { exact: true })).toBeVisible();
-  const pleasantValleyEvent = page.getByText('Pleasant Valley Country Club', { exact: true }).locator('..').locator('..');
+  const pleasantValleyEvent = page.getByTestId('championship-event-1');
   await expect(pleasantValleyEvent.getByText('6:00 AM', { exact: true })).toBeVisible();
   await expect(page.getByText('Everyone arrive around 6:00 AM', { exact: true })).toBeVisible();
   await expect(page.getByText('6:20 AM', { exact: true })).toHaveCount(0);

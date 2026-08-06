@@ -36,7 +36,7 @@ const EventCard = ({ events }) => (
       const badge = formatDateBadge(event.date);
       const ceremony = /award/i.test(event.name);
       return (
-        <div key={`${event.name}-${event.date}`} style={{ display: 'grid', gridTemplateColumns: '48px 1fr auto', gap: 11, alignItems: 'center', padding: '12px 0', borderTop: index ? `1px solid ${line}` : 'none', ...(ceremony ? { background: '#fbf0cf', borderRadius: 12, margin: '5px -5px -4px', padding: '12px 5px' } : {}) }}>
+        <div key={`${event.name}-${event.date}`} data-testid={`championship-event-${index}`} style={{ display: 'grid', gridTemplateColumns: '48px 1fr auto', gap: 11, alignItems: 'center', padding: '12px 0', borderTop: index ? `1px solid ${line}` : 'none', ...(ceremony ? { background: '#fbf0cf', borderRadius: 12, margin: '5px -5px -4px', padding: '12px 5px' } : {}) }}>
           <div style={{ width: 48, height: 48, borderRadius: 12, background: colors.greenDark, color: colors.offWhite, display: 'grid', placeContent: 'center', textAlign: 'center' }}>
             <span style={{ color: colors.yellow, fontSize: 8, fontWeight: 700, letterSpacing: 1 }}>{badge.month}</span>
             <strong style={{ fontFamily: serif, fontSize: 19, lineHeight: 1 }}>{badge.day}</strong>
