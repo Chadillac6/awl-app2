@@ -7,7 +7,7 @@ const championshipCsv = [
   'WEEKEND EVENTS',
   'Event,Date,Start Time,Course / Venue,Address,Details',
   'Round One,8/8/2026,6:00 AM,Shawnee Hills,,',
-  'Final Round,8/9/2026,6:30 AM,Pleasant Valley Country Club,,',
+  'Final Round,8/9/2026,6:00 AM,Pleasant Valley Country Club,,',
   'AWL Awards Ceremony,8/9/2026,1:30 PM,Awards Ceremony,"13489 Lake Avenue, Lakewood, Ohio","Groups A & B: Bring appetizers · Groups C & D: Bring desserts"',
   '',
   'CHAMPIONSHIP RULES',
@@ -56,7 +56,8 @@ test('preview mode shows championship splash, page, sponsor, and unique tab', as
   await expect(page.getByText('Pleasant Valley Country Club', { exact: true })).toBeVisible();
   await expect(page.getByText('AWL Awards Ceremony', { exact: true })).toBeVisible();
   await expect(page.getByText('Groups A & B: Bring appetizers · Groups C & D: Bring desserts', { exact: true })).toBeVisible();
-  await expect(page.getByText('6:30 AM', { exact: true })).toBeVisible();
+  const pleasantValleyEvent = page.getByTestId('championship-event-final-round');
+  await expect(pleasantValleyEvent.getByText('6:00 AM', { exact: true })).toBeVisible();
   await expect(page.getByText('Everyone arrive around 6:00 AM', { exact: true })).toBeVisible();
   await expect(page.getByText('6:20 AM', { exact: true })).toHaveCount(0);
 
