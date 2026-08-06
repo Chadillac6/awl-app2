@@ -10,10 +10,10 @@ export const championshipFallback = {
     { number: '3', name: 'Championship Tie', text: 'Final approved championship tiebreak procedure will appear here.' },
   ],
   groups: [
-    { name: 'Group 1', teeTime: '', players: ['Chuck', 'Sean', 'Fitch', 'Ian'], notes: '' },
-    { name: 'Group 2', teeTime: '', players: ['Jimmy', 'Andulics', 'Tony', 'Glen'], notes: '' },
-    { name: 'Group 3', teeTime: '', players: ['Baker', 'Houser', 'Chad', 'Faro'], notes: '' },
-    { name: 'Group 4', teeTime: '', players: ['Jared', 'Carp', 'Jake', 'Basar'], notes: '' },
+    { name: 'Group 1', teeTime: '', players: ['Chuck', 'Sean', 'Fitch', 'Ian'], notes: '', handicaps: {} },
+    { name: 'Group 2', teeTime: '', players: ['Jimmy', 'Andulics', 'Tony', 'Glen'], notes: '', handicaps: {} },
+    { name: 'Group 3', teeTime: '', players: ['Baker', 'Houser', 'Chad', 'Faro'], notes: '', handicaps: {} },
+    { name: 'Group 4', teeTime: '', players: ['Jared', 'Carp', 'Jake', 'Basar'], notes: '', handicaps: {} },
   ],
   leaderboard: [
     'Chuck', 'Sean', 'Fitch', 'Ian', 'Jimmy', 'Andulics', 'Tony', 'Glen',

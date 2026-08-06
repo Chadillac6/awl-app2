@@ -209,6 +209,7 @@ export const parseChampionshipCSV = (csvText) => {
   const eventsStart = findSection(rows, 'WEEKEND EVENTS');
   const rulesStart = findSection(rows, 'CHAMPIONSHIP RULES');
   const groupsStart = findSection(rows, 'GROUPINGS & TEE TIMES');
+  const handicapsStart = findSection(rows, 'WEEKEND HANDICAPS');
   const leaderboardStart = findSection(rows, 'CHAMPIONSHIP LEADERBOARD');
   const finalResultsStart = findSection(rows, 'FINAL RESULTS');
   const controlsStart = findSection(rows, 'MODE & NOTIFICATION CONTROLS');
@@ -233,12 +234,26 @@ export const parseChampionshipCSV = (csvText) => {
     text: safeText(row[2]),
   })).filter((rule) => rule.name || rule.text);
 
-  const groups = sectionRows(groupsStart, leaderboardStart).map((row) => ({
+  const groups = sectionRows(groupsStart, handicapsStart >= 0 ? handicapsStart : leaderboardStart).map((row) => ({
     name: safeText(row[0]),
     teeTime: safeText(row[1]),
     players: row.slice(2, 6).map(safeText).filter(Boolean),
     notes: safeText(row[6]),
   })).filter((group) => group.name && group.players.length);
+
+  const handicapsByPlayer = Object.fromEntries(sectionRows(handicapsStart, leaderboardStart)
+    .map((row) => [safeText(row[0]).toLowerCase(), {
+      round1: optionalNumber(row[1]),
+      round2: optionalNumber(row[2]),
+    }])
+    .filter(([name]) => name));
+
+  groups.forEach((group) => {
+    group.handicaps = Object.fromEntries(group.players.map((player) => [
+      player,
+      handicapsByPlayer[player.toLowerCase()] ?? { round1: null, round2: null },
+    ]));
+  });
 
   const groupOrder = new Map(groups.flatMap((group, groupIndex) => group.players.map((name, playerIndex) => [
     name.toLowerCase(),
