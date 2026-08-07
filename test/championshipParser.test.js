@@ -36,6 +36,8 @@ const championshipCsv = [
   ',Chuck,Group 1,74,70,144,160,',
   ',Sean,Group 1,68,69,137,151,',
   ',Fitch,Group 1,,,,,,',
+  ',Ian,Group 1,DNF,72,144,,Did not finish Saturday',
+  ',Andulics,Group 2,73,DNP,DNP,,Did not play Sunday',
   '',
   'FINAL RESULTS',
   'Award,Winner,Final Score,Notes',
@@ -60,9 +62,14 @@ test('championship parser extracts all page sections and sorts lowest net first'
   assert.deepEqual(parsed.groups[0].players, ['Chuck', 'Sean', 'Fitch', 'Ian']);
   assert.deepEqual(parsed.groups[0].handicaps.Chuck, { round1: 14, round2: 13 });
   assert.deepEqual(parsed.groups[0].handicaps.Fitch, { round1: null, round2: null });
-  assert.deepEqual(parsed.leaderboard.map((player) => player.name), ['Sean', 'Chuck', 'Fitch']);
+  assert.deepEqual(parsed.leaderboard.map((player) => player.name), ['Sean', 'Chuck', 'Fitch', 'Andulics', 'Ian']);
   assert.equal(parsed.leaderboard.some((player) => player.name === 'Winner'), false);
   assert.equal(parsed.leaderboard[0].weekendNet, 137);
+  assert.deepEqual(parsed.leaderboard.slice(-2).map((player) => [player.name, player.weekendNet]), [
+    ['Andulics', 'DNF'],
+    ['Ian', 'DNF'],
+  ]);
+  assert.equal(parsed.leaderboard.find((player) => player.name === 'Ian').round1Net, 'DNF');
   assert.equal(parsed.controls['Groupings Confirmed?'], 'YES');
   assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');
 });

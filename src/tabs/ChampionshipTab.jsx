@@ -22,7 +22,7 @@ const normalizeTime = (value) => {
   return /am|pm/i.test(text) ? text : `${text} AM`;
 };
 
-const scoreText = (value) => Number.isFinite(value) ? String(value) : '—';
+const scoreText = (value) => Number.isFinite(value) || value === 'DNP' || value === 'DNF' ? String(value) : '—';
 
 const SectionLabel = ({ children }) => (
   <h2 style={{ margin: '24px 4px 10px', color: '#b68716', fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: 'uppercase' }}>{children}</h2>
