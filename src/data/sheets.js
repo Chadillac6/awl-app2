@@ -246,7 +246,7 @@ export const parseChampionshipCSV = (csvText) => {
     teeTime: safeText(row[1]),
     players: row.slice(2, 6).map(safeText).filter(Boolean),
     notes: safeText(row[6]),
-  })).filter((group) => group.name && group.players.length);
+  })).filter((group) => /^Group\s+\d+$/i.test(group.name) && group.players.length);
 
   const handicapsEnd = nextSectionStart(handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
   const handicapsByPlayer = Object.fromEntries(sectionRows(handicapsStart, handicapsEnd)

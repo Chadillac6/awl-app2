@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppHeader, BottomNavigation } from './components/AppChrome.jsx';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { SplashScreen } from './components/SplashScreen';
@@ -9,12 +9,15 @@ import { RulesTab } from './tabs/RulesTab';
 import { ScheduleTab } from './tabs/ScheduleTab';
 import { ChampionshipTab } from './tabs/ChampionshipTab.jsx';
 import { isChampionshipModeEnabled } from './lib/championshipMode.js';
+import { installAppFreshnessCheck } from './lib/appFreshness.js';
 import { colors } from './themeTokens.js';
 
 export default function GolfLeagueApp() {
   const championshipMode = isChampionshipModeEnabled();
   const [showSplash, setShowSplash] = useState(true);
   const [activeTab, setActiveTab] = useState(championshipMode ? 'championship' : 'leaderboard');
+
+  useEffect(() => installAppFreshnessCheck(), []);
 
   const renderTab = () => {
     switch (activeTab) {
