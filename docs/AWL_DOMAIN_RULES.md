@@ -24,6 +24,9 @@ generic golf workflow without Chad Supers explicitly changing the league rule.
 
 - Championship and special-event scoring is manual and must not be inferred
   from regular-week rules.
+- Enter `DNP` in either Championship round score when a golfer did not play that
+  day. Their weekend total becomes `DNF` and sorts below every numeric total;
+  multiple DNF golfers are ordered alphabetically.
 - Championship Mode remains disabled until Chad explicitly approves launch.
 - The live Championship worksheet endpoint must pass its production readiness
   check before the mode can be enabled.

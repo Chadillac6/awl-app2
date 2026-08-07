@@ -204,6 +204,12 @@ const optionalNumber = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+const championshipScore = (value) => {
+  const text = safeText(value).toUpperCase();
+  if (text === 'DNP' || text === 'DNF') return text;
+  return optionalNumber(value);
+};
+
 export const parseChampionshipCSV = (csvText) => {
   const rows = parseCSV(csvText);
   const eventsStart = findSection(rows, 'WEEKEND EVENTS');
@@ -268,18 +274,29 @@ export const parseChampionshipCSV = (csvText) => {
     (groupIndex * 4) + playerIndex,
   ])));
   const leaderboardEnd = nextSectionStart(leaderboardStart, handicapsStart, finalResultsStart, controlsStart);
-  const leaderboard = sectionRows(leaderboardStart, leaderboardEnd).map((row) => ({
-    position: optionalNumber(row[0]),
-    name: safeText(row[1]),
-    group: safeText(row[2]),
-    round1Net: optionalNumber(row[3]),
-    round2Net: optionalNumber(row[4]),
-    weekendNet: optionalNumber(row[5]),
-    grossTotal: optionalNumber(row[6]),
-    notes: safeText(row[7]),
-  })).filter((player) => player.name);
+  const leaderboard = sectionRows(leaderboardStart, leaderboardEnd).map((row) => {
+    const round1Net = championshipScore(row[3]);
+    const round2Net = championshipScore(row[4]);
+    const enteredTotal = championshipScore(row[5]);
+    const didNotFinish = round1Net === 'DNP' || round2Net === 'DNP' || enteredTotal === 'DNF';
+
+    return {
+      position: optionalNumber(row[0]),
+      name: safeText(row[1]),
+      group: safeText(row[2]),
+      round1Net,
+      round2Net,
+      weekendNet: didNotFinish ? 'DNF' : enteredTotal,
+      grossTotal: optionalNumber(row[6]),
+      notes: safeText(row[7]),
+    };
+  }).filter((player) => player.name);
 
   leaderboard.sort((a, b) => {
+    const aDnf = a.weekendNet === 'DNF';
+    const bDnf = b.weekendNet === 'DNF';
+    if (aDnf !== bDnf) return aDnf ? 1 : -1;
+    if (aDnf && bDnf) return a.name.localeCompare(b.name);
     const aScored = Number.isFinite(a.weekendNet) || Number.isFinite(a.round1Net);
     const bScored = Number.isFinite(b.weekendNet) || Number.isFinite(b.round1Net);
     if (aScored !== bScored) return aScored ? -1 : 1;

@@ -34,6 +34,7 @@ const championshipCsv = [
   ',Chuck,Group 1,74,70,144,160,',
   ',Sean,Group 1,68,69,137,151,',
   ',Fitch,Group 1,,,,,,',
+  ',Ian,Group 1,DNP,72,DNF,,Did not play Saturday',
   '',
   'FINAL RESULTS',
   'Award,Winner,Final Score,Notes',
@@ -80,7 +81,7 @@ test('preview mode shows championship splash, page, sponsor, and unique tab', as
   ]);
 });
 
-test('leaderboard sorts scored golfers by lowest total net', async ({ page }) => {
+test('leaderboard sorts scored golfers by lowest total net and DNF at the bottom', async ({ page }) => {
   await page.goto('/?championshipPreview=1');
   await page.waitForTimeout(4100);
 
@@ -88,7 +89,10 @@ test('leaderboard sorts scored golfers by lowest total net', async ({ page }) =>
   await expect(rows.first()).toHaveAttribute('data-player', 'Sean');
   await expect(rows.nth(1)).toHaveAttribute('data-player', 'Chuck');
   await expect(page.getByText('Total Net Scores', { exact: true })).toBeVisible();
-  await expect(page.getByTestId('championship-leaderboard-row')).toHaveCount(3);
+  await expect(rows.nth(3)).toHaveAttribute('data-player', 'Ian');
+  await expect(rows.nth(3).getByText('DNP', { exact: true })).toBeVisible();
+  await expect(rows.nth(3).getByText('DNF', { exact: true })).toBeVisible();
+  await expect(page.getByTestId('championship-leaderboard-row')).toHaveCount(4);
 });
 
 test('standard app remains unchanged when preview mode is off', async ({ page }) => {
