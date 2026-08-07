@@ -22,6 +22,13 @@ const championshipCsv = [
   'Group 3,,Baker,Houser,Chad,Faro,',
   'Group 4,,Jared,Carp,Jake,Basar,',
   '',
+  'WEEKEND HANDICAPS',
+  'Player,Sat HDCP,Sun HDCP',
+  'Chuck,14,13',
+  'Sean,10,9',
+  'Fitch,,',
+  'Ian,18,17',
+  '',
   'CHAMPIONSHIP LEADERBOARD',
   'Position,Player,Group,Round 1 Net,Round 2 Net,Weekend Net,Gross Total,Status / Notes',
   ',Chuck,Group 1,74,70,144,160,',
@@ -59,6 +66,8 @@ test('preview mode shows championship splash, page, sponsor, and unique tab', as
   const pleasantValleyEvent = page.getByTestId('championship-event-final-round');
   await expect(pleasantValleyEvent.getByText('6:00 AM', { exact: true })).toBeVisible();
   await expect(page.getByText('Everyone arrive around 6:00 AM', { exact: true })).toBeVisible();
+  await expect(page.getByRole('columnheader', { name: 'Saturday handicap' }).first()).toBeVisible();
+  await expect(page.getByTestId('championship-group-1').getByText('14', { exact: true })).toBeVisible();
   await expect(page.getByText('6:20 AM', { exact: true })).toHaveCount(0);
 
   const sectionLabels = await page.locator('[data-testid="championship-page"] > h2').allTextContents();

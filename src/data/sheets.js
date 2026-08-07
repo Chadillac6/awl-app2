@@ -209,16 +209,22 @@ export const parseChampionshipCSV = (csvText) => {
   const eventsStart = findSection(rows, 'WEEKEND EVENTS');
   const rulesStart = findSection(rows, 'CHAMPIONSHIP RULES');
   const groupsStart = findSection(rows, 'GROUPINGS & TEE TIMES');
+  const handicapsStart = findSection(rows, 'WEEKEND HANDICAPS');
   const leaderboardStart = findSection(rows, 'CHAMPIONSHIP LEADERBOARD');
   const finalResultsStart = findSection(rows, 'FINAL RESULTS');
   const controlsStart = findSection(rows, 'MODE & NOTIFICATION CONTROLS');
+
+  const nextSectionStart = (start, ...candidates) => candidates
+    .filter((candidate) => candidate > start)
+    .sort((a, b) => a - b)[0] ?? -1;
 
   const sectionRows = (start, next) => {
     if (start < 0) return [];
     return rows.slice(start + 2, next < 0 ? rows.length : next).filter((row) => !isBlankRow(row));
   };
 
-  const events = sectionRows(eventsStart, rulesStart).map((row) => ({
+  const eventsEnd = nextSectionStart(eventsStart, rulesStart, groupsStart, handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const events = sectionRows(eventsStart, eventsEnd).map((row) => ({
     name: safeText(row[0]),
     date: safeText(row[1]),
     time: safeText(row[2]),
@@ -227,24 +233,41 @@ export const parseChampionshipCSV = (csvText) => {
     details: safeText(row[5]),
   })).filter((event) => event.name);
 
-  const rules = sectionRows(rulesStart, groupsStart).map((row) => ({
+  const rulesEnd = nextSectionStart(rulesStart, groupsStart, handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const rules = sectionRows(rulesStart, rulesEnd).map((row) => ({
     number: safeText(row[0]),
     name: safeText(row[1]),
     text: safeText(row[2]),
   })).filter((rule) => rule.name || rule.text);
 
-  const groups = sectionRows(groupsStart, leaderboardStart).map((row) => ({
+  const groupsEnd = nextSectionStart(groupsStart, handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const groups = sectionRows(groupsStart, groupsEnd).map((row) => ({
     name: safeText(row[0]),
     teeTime: safeText(row[1]),
     players: row.slice(2, 6).map(safeText).filter(Boolean),
     notes: safeText(row[6]),
   })).filter((group) => group.name && group.players.length);
 
+  const handicapsEnd = nextSectionStart(handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const handicapsByPlayer = Object.fromEntries(sectionRows(handicapsStart, handicapsEnd)
+    .map((row) => [safeText(row[0]).toLowerCase(), {
+      round1: optionalNumber(row[1]),
+      round2: optionalNumber(row[2]),
+    }])
+    .filter(([name]) => name));
+
+  groups.forEach((group) => {
+    group.handicaps = Object.fromEntries(group.players.map((player) => [
+      player,
+      handicapsByPlayer[player.toLowerCase()] ?? { round1: null, round2: null },
+    ]));
+  });
+
   const groupOrder = new Map(groups.flatMap((group, groupIndex) => group.players.map((name, playerIndex) => [
     name.toLowerCase(),
     (groupIndex * 4) + playerIndex,
   ])));
-  const leaderboardEnd = finalResultsStart >= 0 ? finalResultsStart : controlsStart;
+  const leaderboardEnd = nextSectionStart(leaderboardStart, handicapsStart, finalResultsStart, controlsStart);
   const leaderboard = sectionRows(leaderboardStart, leaderboardEnd).map((row) => ({
     position: optionalNumber(row[0]),
     name: safeText(row[1]),

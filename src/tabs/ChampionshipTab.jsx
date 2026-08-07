@@ -73,12 +73,23 @@ const Groupings = ({ groups }) => (
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
       {groups.map((group) => (
-        <section key={group.name} style={{ overflow: 'hidden', border: `1px solid ${line}`, borderRadius: 15, background: paper }}>
+        <section key={group.name} data-testid={`championship-${group.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} style={{ overflow: 'hidden', border: `1px solid ${line}`, borderRadius: 15, background: paper }}>
           <header style={{ padding: 10, background: '#eef4ef', color: colors.greenDark, fontSize: 11, fontWeight: 700 }}>
             {group.name}
           </header>
-          <ul style={{ listStyle: 'none', margin: 0, padding: '7px 10px 10px' }}>
-            {group.players.map((player) => <li key={player} style={{ padding: '4px 0', borderBottom: '1px solid rgba(10,92,46,0.08)', color: colors.greenDark, fontSize: 11, fontWeight: 700 }}>{player}</li>)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 34px 34px', gap: 4, padding: '7px 8px 5px', color: '#849289', fontSize: 7, fontWeight: 700, letterSpacing: 0.35, textTransform: 'uppercase' }}>
+            <span role="columnheader">Player</span><span role="columnheader" aria-label="Saturday handicap" style={{ textAlign: 'center' }}>Sat<br />HDCP</span><span role="columnheader" aria-label="Sunday handicap" style={{ textAlign: 'center' }}>Sun<br />HDCP</span>
+          </div>
+          <ul style={{ listStyle: 'none', margin: 0, padding: '0 8px 8px' }}>
+            {group.players.map((player) => {
+              const handicap = group.handicaps?.[player] ?? {};
+              return (
+                <li key={player} style={{ minHeight: 29, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 34px 34px', gap: 4, alignItems: 'center', borderTop: '1px solid rgba(10,92,46,0.08)', color: colors.greenDark, fontSize: 10, fontWeight: 700 }}>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{player}</span>
+                  {[handicap.round1, handicap.round2].map((value, index) => <span key={index} style={{ padding: '5px 2px', borderRadius: 5, background: '#f2f5f0', color: '#668072', fontSize: 9, fontWeight: 600, textAlign: 'center' }}>{scoreText(value)}</span>)}
+                </li>
+              );
+            })}
           </ul>
         </section>
       ))}
