@@ -78,3 +78,11 @@ test('championship handicap parsing stops at the next known section without a le
   assert.equal(parsed.groups[0].handicaps['FINAL RESULTS'], undefined);
   assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');
 });
+
+test('championship parser never turns unrelated worksheet rows into group cards', () => {
+  const withoutHandicapLabel = championshipCsv.replace('WEEKEND HANDICAPS\n', '');
+  const parsed = parseChampionshipCSV(withoutHandicapLabel);
+
+  assert.deepEqual(parsed.groups.map((group) => group.name), ['Group 1', 'Group 2', 'Group 3', 'Group 4']);
+  assert.equal(parsed.groups.some((group) => group.name === 'Player' || group.name === 'Chuck'), false);
+});
