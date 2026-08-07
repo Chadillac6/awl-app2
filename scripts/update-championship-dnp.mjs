@@ -8,20 +8,18 @@ const sheet = await getSpreadsheetValues({ spreadsheetId: SHEET_ID, range: 'Cham
 const rows = sheet.values ?? [];
 const sectionIndex = rows.findIndex((row) => String(row[0] ?? '').trim().toUpperCase() === 'CHAMPIONSHIP LEADERBOARD');
 if (sectionIndex < 0) throw new Error('Championship leaderboard section was not found');
+const finalResultsIndex = rows.findIndex((row, index) => index > sectionIndex && String(row[0] ?? '').trim().toUpperCase() === 'FINAL RESULTS');
+if (finalResultsIndex < 0) throw new Error('Final Results section was not found after the Championship leaderboard');
 
 const startRow = sectionIndex + 3;
-const playerRows = [];
-for (const row of rows.slice(sectionIndex + 2)) {
-  if (!String(row[1] ?? '').trim()) break;
-  playerRows.push(row);
-}
-if (!playerRows.length) throw new Error('Championship leaderboard player rows could not be validated');
+const playerRows = rows.slice(sectionIndex + 2, finalResultsIndex).filter((row) => String(row[1] ?? '').trim());
+if (playerRows.length !== 16) throw new Error(`Expected 16 Championship golfers, found ${playerRows.length}`);
 const endRow = startRow + playerRows.length - 1;
 
 const formulas = playerRows.map((_, index) => {
   const row = startRow + index;
   return [
-    `=IF(OR(UPPER(TRIM(TO_TEXT(D${row})))="DNP",UPPER(TRIM(TO_TEXT(E${row})))="DNP"),"DNF",IF(OR(D${row}="",E${row}=""),"",D${row}+E${row}))`,
+    `=IF(OR(REGEXMATCH(UPPER(TRIM(TO_TEXT(D${row}))),"^DN(P|F)$"),REGEXMATCH(UPPER(TRIM(TO_TEXT(E${row}))),"^DN(P|F)$")),"DNF",IF(OR(D${row}="",E${row}=""),"",D${row}+E${row}))`,
   ];
 });
 
