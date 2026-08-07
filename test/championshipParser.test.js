@@ -36,8 +36,8 @@ const championshipCsv = [
   ',Chuck,Group 1,74,70,144,160,',
   ',Sean,Group 1,68,69,137,151,',
   ',Fitch,Group 1,,,,,,',
-  ',Ian,Group 1,DNP,72,DNF,,Did not play Saturday',
-  ',Andulics,Group 2,73,DNP,#VALUE!,,Did not play Sunday',
+  ',Ian,Group 1,DNF,72,144,,Did not finish Saturday',
+  ',Andulics,Group 2,73,DNP,DNP,,Did not play Sunday',
   '',
   'FINAL RESULTS',
   'Award,Winner,Final Score,Notes',
@@ -69,7 +69,7 @@ test('championship parser extracts all page sections and sorts lowest net first'
     ['Andulics', 'DNF'],
     ['Ian', 'DNF'],
   ]);
-  assert.equal(parsed.leaderboard.find((player) => player.name === 'Ian').round1Net, 'DNP');
+  assert.equal(parsed.leaderboard.find((player) => player.name === 'Ian').round1Net, 'DNF');
   assert.equal(parsed.controls['Groupings Confirmed?'], 'YES');
   assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');
 });

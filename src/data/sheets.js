@@ -210,6 +210,8 @@ const championshipScore = (value) => {
   return optionalNumber(value);
 };
 
+const isChampionshipStatus = (value) => value === 'DNP' || value === 'DNF';
+
 export const parseChampionshipCSV = (csvText) => {
   const rows = parseCSV(csvText);
   const eventsStart = findSection(rows, 'WEEKEND EVENTS');
@@ -278,7 +280,7 @@ export const parseChampionshipCSV = (csvText) => {
     const round1Net = championshipScore(row[3]);
     const round2Net = championshipScore(row[4]);
     const enteredTotal = championshipScore(row[5]);
-    const didNotFinish = round1Net === 'DNP' || round2Net === 'DNP' || enteredTotal === 'DNF';
+    const didNotFinish = [round1Net, round2Net, enteredTotal].some(isChampionshipStatus);
 
     return {
       position: optionalNumber(row[0]),
@@ -300,8 +302,8 @@ export const parseChampionshipCSV = (csvText) => {
     const aScored = Number.isFinite(a.weekendNet) || Number.isFinite(a.round1Net);
     const bScored = Number.isFinite(b.weekendNet) || Number.isFinite(b.round1Net);
     if (aScored !== bScored) return aScored ? -1 : 1;
-    const aScore = a.weekendNet ?? a.round1Net ?? Infinity;
-    const bScore = b.weekendNet ?? b.round1Net ?? Infinity;
+    const aScore = Number.isFinite(a.weekendNet) ? a.weekendNet : Number.isFinite(a.round1Net) ? a.round1Net : Infinity;
+    const bScore = Number.isFinite(b.weekendNet) ? b.weekendNet : Number.isFinite(b.round1Net) ? b.round1Net : Infinity;
     if (aScore !== bScore) return aScore - bScore;
     return (groupOrder.get(a.name.toLowerCase()) ?? 999) - (groupOrder.get(b.name.toLowerCase()) ?? 999);
   });
