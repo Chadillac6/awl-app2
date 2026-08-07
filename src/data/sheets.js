@@ -238,7 +238,8 @@ export const parseChampionshipCSV = (csvText) => {
     text: safeText(row[2]),
   })).filter((rule) => rule.name || rule.text);
 
-  const groups = sectionRows(groupsStart, handicapsStart >= 0 ? handicapsStart : leaderboardStart).map((row) => ({
+  const groupsEnd = nextSectionStart(groupsStart, handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const groups = sectionRows(groupsStart, groupsEnd).map((row) => ({
     name: safeText(row[0]),
     teeTime: safeText(row[1]),
     players: row.slice(2, 6).map(safeText).filter(Boolean),
