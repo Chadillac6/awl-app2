@@ -66,3 +66,15 @@ test('championship parser extracts all page sections and sorts lowest net first'
   assert.equal(parsed.controls['Groupings Confirmed?'], 'YES');
   assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');
 });
+
+test('championship handicap parsing stops at the next known section without a leaderboard', () => {
+  const withoutLeaderboard = championshipCsv.replace(
+    /CHAMPIONSHIP LEADERBOARD[\s\S]*?(?=FINAL RESULTS)/,
+    '',
+  );
+  const parsed = parseChampionshipCSV(withoutLeaderboard);
+
+  assert.deepEqual(parsed.groups[0].handicaps.Chuck, { round1: 14, round2: 13 });
+  assert.equal(parsed.groups[0].handicaps['FINAL RESULTS'], undefined);
+  assert.equal(parsed.controls['Championship Mode Ready?'], 'NO');
+});

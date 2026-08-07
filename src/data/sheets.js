@@ -214,6 +214,10 @@ export const parseChampionshipCSV = (csvText) => {
   const finalResultsStart = findSection(rows, 'FINAL RESULTS');
   const controlsStart = findSection(rows, 'MODE & NOTIFICATION CONTROLS');
 
+  const nextSectionStart = (start, ...candidates) => candidates
+    .filter((candidate) => candidate > start)
+    .sort((a, b) => a - b)[0] ?? -1;
+
   const sectionRows = (start, next) => {
     if (start < 0) return [];
     return rows.slice(start + 2, next < 0 ? rows.length : next).filter((row) => !isBlankRow(row));
@@ -241,7 +245,8 @@ export const parseChampionshipCSV = (csvText) => {
     notes: safeText(row[6]),
   })).filter((group) => group.name && group.players.length);
 
-  const handicapsByPlayer = Object.fromEntries(sectionRows(handicapsStart, leaderboardStart)
+  const handicapsEnd = nextSectionStart(handicapsStart, leaderboardStart, finalResultsStart, controlsStart);
+  const handicapsByPlayer = Object.fromEntries(sectionRows(handicapsStart, handicapsEnd)
     .map((row) => [safeText(row[0]).toLowerCase(), {
       round1: optionalNumber(row[1]),
       round2: optionalNumber(row[2]),
