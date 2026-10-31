@@ -2,8 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { historicalData } from '../data/staticData';
 import { colors } from '../themeTokens.js';
 
-const champPhotos = { 2022: '/championship2022.jpg', 2023: '/championship2023.jpg', 2024: '/championship2024.jpg', 2025: '/championship2025.jpeg' };
-const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%' };
+const champPhotos = { 2022: '/championship2022.jpg', 2023: '/championship2023.jpg', 2024: '/championship2024.jpg', 2025: '/championship2025.jpeg', 2026: '/championship2026.jpg' };
+const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%', 2026: 'center 60%' };
+// Wide group shots render at their natural aspect ratio so nobody on the edges is cropped off.
+const champPhotoAspectRatios = { 2026: '1280 / 541' };
+
+const photoSize = (aspectRatio, height, isMobile) => (aspectRatio ? { height: 'auto', aspectRatio, maxHeight: isMobile ? undefined : 360 } : { height });
 const senecaPhotos = { 2026: '/seneca2026.jpg', 2025: '/seneca2025.jpeg' };
 const senecaPhotoPositions = { 2026: 'center 40%', 2025: 'center 26%' };
 
@@ -26,7 +30,7 @@ export const HistoryTab = () => {
     <div style={{ padding: '0 16px 100px' }}>
       <FeatureCard item={currentChamp} isMobile={isMobile} showResults={showCurrentChampResults} onToggle={() => setShowCurrentChampResults((v) => !v)} />
       <h3 style={{ fontFamily: '"Playfair Display", Georgia', fontSize: 18, color: colors.greenDark, marginBottom: 14 }}>Hall of Champions</h3>
-      {pastChamps.map((champ) => <AccordionCard key={champ.year} item={champ} expanded={expandedYear === champ.year} onToggle={() => setExpandedYear(expandedYear === champ.year ? null : champ.year)} image={champPhotos[champ.year]} imagePosition={champPhotoPositions[champ.year]} isMobile={isMobile} />)}
+      {pastChamps.map((champ) => <AccordionCard key={champ.year} item={champ} expanded={expandedYear === champ.year} onToggle={() => setExpandedYear(expandedYear === champ.year ? null : champ.year)} image={champPhotos[champ.year]} imagePosition={champPhotoPositions[champ.year]} imageAspectRatio={champPhotoAspectRatios[champ.year]} isMobile={isMobile} />)}
       <h3 style={{ fontFamily: '"Playfair Display", Georgia', fontSize: 18, color: colors.greenDark, marginTop: 28, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}><span>&#9971;</span> Seneca Open</h3>
       {historicalData.senecaOpens.map((seneca) => <AccordionCard key={seneca.year} item={seneca} expanded={expandedSeneca === seneca.year} onToggle={() => setExpandedSeneca(expandedSeneca === seneca.year ? null : seneca.year)} image={senecaPhotos[seneca.year]} imagePosition={senecaPhotoPositions[seneca.year]} isMobile={isMobile} seneca />)}
     </div>
@@ -35,7 +39,7 @@ export const HistoryTab = () => {
 
 const FeatureCard = ({ item, isMobile, showResults, onToggle }) => (
   <div style={{ background: colors.yellow, borderRadius: 20, overflow: 'hidden', marginBottom: 24, position: 'relative' }}>
-    {champPhotos[item.year] && <img src={champPhotos[item.year]} alt={`${item.year} Champions`} fetchPriority="high" decoding="async" style={{ width: '100%', height: isMobile ? 240 : 260, objectFit: 'cover', objectPosition: champPhotoPositions[item.year] || 'center 30%', display: 'block' }} />}
+    {champPhotos[item.year] && <img src={champPhotos[item.year]} alt={`${item.year} Champions`} fetchPriority="high" decoding="async" style={{ width: '100%', ...photoSize(champPhotoAspectRatios[item.year], isMobile ? 240 : 260, isMobile), objectFit: 'cover', objectPosition: champPhotoPositions[item.year] || 'center 30%', display: 'block' }} />}
     <div style={{ padding: 24, textAlign: 'center', position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.3) 0%, transparent 50%)' }} />
       <span style={{ fontSize: 48 }}>&#127942;</span>
@@ -51,7 +55,7 @@ const FeatureCard = ({ item, isMobile, showResults, onToggle }) => (
   </div>
 );
 
-const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, isMobile, seneca = false }) => {
+const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, imageAspectRatio, isMobile, seneca = false }) => {
   const panelId = `${seneca ? 'seneca' : 'championship'}-${item.year}-results`;
   return (
   <div style={{ background: colors.offWhite, borderRadius: 14, marginBottom: 12, border: expanded ? `2px solid ${colors.green}` : `1px solid ${colors.offWhiteMuted}`, overflow: 'hidden' }}>
@@ -62,7 +66,7 @@ const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, isMobil
     </button>
     {expanded && (
       <div id={panelId} role="region" aria-label={`${item.year} full results`} style={{ borderTop: `1px solid ${colors.offWhiteMuted}` }}>
-        {image && <img src={image} alt={`${item.year}`} loading="lazy" decoding="async" style={{ width: '100%', height: isMobile ? 210 : 240, objectFit: 'cover', objectPosition: imagePosition || 'center 30%', display: 'block' }} />}
+        {image && <img src={image} alt={`${item.year}`} loading="lazy" decoding="async" style={{ width: '100%', ...photoSize(imageAspectRatio, isMobile ? 210 : 240, isMobile), objectFit: 'cover', objectPosition: imagePosition || 'center 30%', display: 'block' }} />}
         <div style={{ padding: '0 16px 16px' }}><p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '12px 0 8px', fontWeight: 600 }}>Full Results</p><ResultsList results={item.results} /></div>
       </div>
     )}
@@ -70,8 +74,11 @@ const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, isMobil
   );
 };
 
-const ResultsList = ({ results, translucent = false }) => (
+const ResultsList = ({ results, translucent = false }) => {
+  const badgeSlot = results.some((player) => String(player.place).length > 2) ? 32 : 24;
+  return (
   <div style={{ marginTop: 16, background: translucent ? 'rgba(255,255,255,0.6)' : 'transparent', borderRadius: 12, padding: translucent ? 12 : 0, textAlign: 'left' }}>
-    {results.map((player, idx) => <div key={`${player.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: idx < results.length - 1 ? `1px solid ${translucent ? 'rgba(0,0,0,0.1)' : colors.offWhiteMuted}` : 'none' }}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ width: 24, height: 24, borderRadius: '50%', background: idx === 0 ? colors.yellow : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : colors.offWhiteMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: colors.greenDark }}>{player.place}</span><div><span style={{ fontSize: 14, fontWeight: 500, color: colors.greenDark }}>{player.name}</span>{player.note && <span style={{ fontSize: 11, color: colors.textMuted, marginLeft: 6 }}>({player.note})</span>}</div></div><span style={{ fontSize: 14, fontWeight: 600, color: colors.green }}>{player.score}</span></div>)}
+    {results.map((player, idx) => <div key={`${player.name}-${idx}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: idx < results.length - 1 ? `1px solid ${translucent ? 'rgba(0,0,0,0.1)' : colors.offWhiteMuted}` : 'none' }}><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><span style={{ width: badgeSlot, flexShrink: 0, display: 'flex' }}><span style={{ minWidth: 24, height: 24, padding: '0 4px', boxSizing: 'border-box', flexShrink: 0, whiteSpace: 'nowrap', borderRadius: 12, background: idx === 0 ? colors.yellow : idx === 1 ? '#C0C0C0' : idx === 2 ? '#CD7F32' : colors.offWhiteMuted, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: colors.greenDark }}>{player.place}</span></span><div><span style={{ fontSize: 14, fontWeight: 500, color: colors.greenDark }}>{player.name}</span>{player.note && <span style={{ fontSize: 11, color: colors.textMuted, marginLeft: 6 }}>({player.note})</span>}</div></div><span style={{ fontSize: 14, fontWeight: 600, color: colors.green }}>{player.score}</span></div>)}
   </div>
-);
+  );
+};

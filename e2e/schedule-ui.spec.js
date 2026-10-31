@@ -19,6 +19,8 @@ test('Schedule UI renders all four groups for every regular week, including thre
   rows.push('MAJOR,12-20,Seneca Open,,,');
   rows.push(',8-7,Championship Aug 8th and 9th,,,');
   await page.route('**/api/sheets/schedule', (route) => route.fulfill({ status: 200, contentType: 'text/csv', body: rows.join('\n') }));
+  // Pin "today" between the Seneca Open (completed) and Championship (upcoming).
+  await page.clock.setFixedTime(new Date(2026, 7, 1, 12));
   await page.goto(process.env.AWL_APP_URL ?? '/', { waitUntil: 'domcontentloaded' });
   await page.getByRole('button', { name: 'Schedule' }).click({ timeout: 15000 });
   await expect(page.getByRole('heading', { name: 'Schedule' })).toBeVisible({ timeout: 15000 });
