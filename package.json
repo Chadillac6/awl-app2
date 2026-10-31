@@ -11,7 +11,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "node --test",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test && playwright test --config e2e/production.config.js",
     "check": "npm run lint && npm test && npm run test:e2e && npm run build",
     "verify:championship": "node scripts/verify-championship-launch.mjs",
     "push:secrets": "node scripts/generate-push-secrets.mjs",

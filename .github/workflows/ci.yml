@@ -16,7 +16,8 @@ concurrency:
 jobs:
   quality:
     name: Quality gate
-    runs-on: ubuntu-latest
+    # Pin to a Playwright-supported runner; ubuntu-latest now resolves to 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
