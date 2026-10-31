@@ -6,11 +6,14 @@
 [build.environment]
   NODE_VERSION = "22.22.0"
 
-# PR #13 is the approved launch switch. Deploy previews remain in normal mode
-# unless the protected championshipPreview query is used. This setting applies
-# only after the PR is merged into the production branch.
+# Championship Mode switch for production (off-season: "false").
+# The 2026 Championship Weekend is over, so production runs in normal mode:
+# normal splash, Schedule tab in the bottom nav, no Championship tab.
+# To re-enable for 2027, change this to "true" in a reviewed PR after following
+# docs/CHAMPIONSHIP_2027_RELAUNCH.md. Deploy previews always stay in normal mode
+# unless the protected ?championshipPreview=1 query is used.
 [context.production.environment]
-  VITE_CHAMPIONSHIP_MODE = "true"
+  VITE_CHAMPIONSHIP_MODE = "false"
 
 [[redirects]]
   from = "/api/sheets/:tab"
