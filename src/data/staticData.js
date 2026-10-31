@@ -131,6 +131,27 @@ export const rulesData = [
 export const historicalData = {
   championships: [
     {
+      year: 2026,
+      results: [
+        { place: 1, name: 'Richie Baker', score: '+2' },
+        { place: 2, name: 'Josh Houser', score: '+6' },
+        { place: 3, name: 'Sean Housel', score: '+7', note: 'Won putt-off' },
+        { place: 'T4', name: 'Glen Morrison', score: '+7' },
+        { place: 'T4', name: 'Jon Faro', score: '+7' },
+        { place: 6, name: 'James Stephens', score: '+8' },
+        { place: 7, name: 'Charles Martin', score: '+10' },
+        { place: 8, name: 'Jared Fritz', score: '+11' },
+        { place: 'T9', name: 'Joe Fitch', score: '+12' },
+        { place: 'T9', name: 'Tony Anderson', score: '+12' },
+        { place: 'T11', name: 'Jim Basar', score: '+13' },
+        { place: 'T11', name: 'Nick Carpenter', score: '+13' },
+        { place: 13, name: 'Jake Taylor', score: '+14' },
+        { place: 14, name: 'Chad Supers', score: '+15' },
+        { place: 15, name: "Ian O'Neal", score: '+22' },
+        { place: 16, name: 'Joey Andulics', score: 'DNP' },
+      ]
+    },
+    {
       year: 2025,
       results: [
         { place: 1, name: 'Jake Taylor', score: '+1' },
