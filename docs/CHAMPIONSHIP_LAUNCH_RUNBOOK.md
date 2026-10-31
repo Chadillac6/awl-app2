@@ -1,5 +1,10 @@
 # Championship Mode Launch Runbook
 
+> Championship Mode is off for the off-season after the 2026 Championship
+> Weekend. To bring it back for 2027 (new worksheet, year-specific strings and
+> assets, then this runbook), follow
+> [CHAMPIONSHIP_2027_RELAUNCH.md](CHAMPIONSHIP_2027_RELAUNCH.md).
+
 ## Release behavior
 
 PR #13 is the production launch switch. Its Netlify deploy preview stays in
