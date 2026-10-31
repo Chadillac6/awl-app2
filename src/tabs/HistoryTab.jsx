@@ -3,11 +3,11 @@ import { historicalData } from '../data/staticData';
 import { colors } from '../themeTokens.js';
 
 const champPhotos = { 2022: '/championship2022.jpg', 2023: '/championship2023.jpg', 2024: '/championship2024.jpg', 2025: '/championship2025.jpeg', 2026: '/championship2026.jpg' };
-const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%', 2026: 'center center' };
+const champPhotoPositions = { 2022: 'center 29%', 2023: 'center 34%', 2024: 'center 29%', 2025: 'center 31%', 2026: 'center 60%' };
 // Wide group shots render at their natural aspect ratio so nobody on the edges is cropped off.
 const champPhotoAspectRatios = { 2026: '1280 / 541' };
 
-const photoSize = (aspectRatio, height) => (aspectRatio ? { height: 'auto', aspectRatio } : { height });
+const photoSize = (aspectRatio, height, isMobile) => (aspectRatio ? { height: 'auto', aspectRatio, maxHeight: isMobile ? undefined : 360 } : { height });
 const senecaPhotos = { 2026: '/seneca2026.jpg', 2025: '/seneca2025.jpeg' };
 const senecaPhotoPositions = { 2026: 'center 40%', 2025: 'center 26%' };
 
@@ -39,7 +39,7 @@ export const HistoryTab = () => {
 
 const FeatureCard = ({ item, isMobile, showResults, onToggle }) => (
   <div style={{ background: colors.yellow, borderRadius: 20, overflow: 'hidden', marginBottom: 24, position: 'relative' }}>
-    {champPhotos[item.year] && <img src={champPhotos[item.year]} alt={`${item.year} Champions`} fetchPriority="high" decoding="async" style={{ width: '100%', ...photoSize(champPhotoAspectRatios[item.year], isMobile ? 240 : 260), objectFit: 'cover', objectPosition: champPhotoPositions[item.year] || 'center 30%', display: 'block' }} />}
+    {champPhotos[item.year] && <img src={champPhotos[item.year]} alt={`${item.year} Champions`} fetchPriority="high" decoding="async" style={{ width: '100%', ...photoSize(champPhotoAspectRatios[item.year], isMobile ? 240 : 260, isMobile), objectFit: 'cover', objectPosition: champPhotoPositions[item.year] || 'center 30%', display: 'block' }} />}
     <div style={{ padding: 24, textAlign: 'center', position: 'relative' }}>
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.3) 0%, transparent 50%)' }} />
       <span style={{ fontSize: 48 }}>&#127942;</span>
@@ -66,7 +66,7 @@ const AccordionCard = ({ item, expanded, onToggle, image, imagePosition, imageAs
     </button>
     {expanded && (
       <div id={panelId} role="region" aria-label={`${item.year} full results`} style={{ borderTop: `1px solid ${colors.offWhiteMuted}` }}>
-        {image && <img src={image} alt={`${item.year}`} loading="lazy" decoding="async" style={{ width: '100%', ...photoSize(imageAspectRatio, isMobile ? 210 : 240), objectFit: 'cover', objectPosition: imagePosition || 'center 30%', display: 'block' }} />}
+        {image && <img src={image} alt={`${item.year}`} loading="lazy" decoding="async" style={{ width: '100%', ...photoSize(imageAspectRatio, isMobile ? 210 : 240, isMobile), objectFit: 'cover', objectPosition: imagePosition || 'center 30%', display: 'block' }} />}
         <div style={{ padding: '0 16px 16px' }}><p style={{ fontSize: 11, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: 1, margin: '12px 0 8px', fontWeight: 600 }}>Full Results</p><ResultsList results={item.results} /></div>
       </div>
     )}
