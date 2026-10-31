@@ -6,11 +6,11 @@
 [build.environment]
   NODE_VERSION = "22.22.0"
 
-# PR #13 is the approved launch switch. Deploy previews remain in normal mode
-# unless the protected championshipPreview query is used. This setting applies
-# only after the PR is merged into the production branch.
+# Regular app is the production default. Re-enable only after Chad approves a
+# new Championship launch and the readiness checks in the runbook pass.
+# Deploy previews stay regular unless the protected preview query is used.
 [context.production.environment]
-  VITE_CHAMPIONSHIP_MODE = "true"
+  VITE_CHAMPIONSHIP_MODE = "false"
 
 [[redirects]]
   from = "/api/sheets/:tab"

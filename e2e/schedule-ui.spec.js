@@ -7,6 +7,9 @@ const expectGroupOnce = async (card, week, group) => {
 };
 
 test('Schedule UI renders all four groups for every regular week, including three-course weeks', async ({ page }) => {
+  // Keep the Championship upcoming and Seneca completed regardless of run date.
+  // Fixed wall-clock time leaves the splash timer running normally.
+  await page.clock.setFixedTime(new Date('2026-07-01T12:00:00-04:00'));
   const rows = [',,2026 SCHEDULE B,,,', ',,Group A,Group B,Group C,Group D'];
   for (let week = 1; week <= 12; week += 1) {
     const courses = week === 8
