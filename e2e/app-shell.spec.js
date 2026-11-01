@@ -35,28 +35,37 @@ test('app shell covers the complete viewport with no top-edge color seam', async
   expect(new Set(geometry.topColors)).toEqual(new Set(['rgb(15, 122, 63)']));
 });
 
-test('iOS safe-area boundary has a continuous green paint layer', async ({ page }) => {
+test('iOS status bar has a real full-width fixed green strip', async ({ page }) => {
   await page.goto('/');
   await page.waitForTimeout(4100);
 
-  const safeAreaPaint = await page.evaluate(() => {
-    const style = getComputedStyle(document.body, '::before');
+  const strip = await page.evaluate(() => {
+    const element = document.querySelector('body > .status-bar-strip');
+    if (!element) return null;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
     return {
+      ariaHidden: element.getAttribute('aria-hidden'),
       backgroundColor: style.backgroundColor,
-      content: style.content,
-      height: Number.parseFloat(style.height),
-      pointerEvents: style.pointerEvents,
+      height: rect.height,
       position: style.position,
-      top: style.top,
+      top: rect.top,
+      widthRatio: rect.width / window.innerWidth,
     };
   });
 
-  expect(safeAreaPaint.backgroundColor).toBe('rgb(15, 122, 63)');
-  expect(safeAreaPaint.content).not.toBe('none');
-  expect(safeAreaPaint.height).toBeGreaterThanOrEqual(2);
-  expect(safeAreaPaint.pointerEvents).toBe('none');
-  expect(safeAreaPaint.position).toBe('fixed');
-  expect(safeAreaPaint.top).toBe('0px');
+  expect(strip).not.toBeNull();
+  expect(strip.ariaHidden).toBe('true');
+  expect(strip.backgroundColor).toBe('rgb(15, 122, 63)');
+  expect(strip.height).toBeGreaterThan(10);
+  expect(strip.position).toBe('fixed');
+  expect(strip.top).toBe(0);
+  expect(strip.widthRatio).toBeGreaterThanOrEqual(0.9);
+});
+
+test('iOS status bar style is default so Home Screen apps get a solid status bar', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'default');
 });
 
 test('all primary navigation destinations open without a render error', async ({ page }) => {

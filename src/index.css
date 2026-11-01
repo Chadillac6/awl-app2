@@ -25,20 +25,19 @@ body {
 }
 
 /*
- * iOS standalone PWAs composite a translucent native status-bar layer over
- * the safe area. Paint one continuous top layer slightly past that boundary
- * so its separator cannot show through above the app header.
+ * Real fixed element (not a pseudo-element) so WebKit samples it as a top
+ * fixed container: iOS 27 Home Screen apps then paint the status bar solid
+ * green instead of blurring the header. Must stay full-width and taller than
+ * 10px; it also bridges the safe-area boundary in Safari.
  */
-body::before {
-  content: '';
+.status-bar-strip {
   position: fixed;
   z-index: 2147483647;
   top: 0;
   right: 0;
   left: 0;
-  height: calc(env(safe-area-inset-top, 0px) + 2px);
+  height: max(12px, calc(env(safe-area-inset-top, 0px) + 2px));
   background: #0f7a3f;
-  pointer-events: none;
 }
 
 * {
