@@ -54,9 +54,11 @@ test('preview mode shows championship splash, page, sponsor, and unique tab', as
   await page.goto('/?championshipPreview=1');
   await expect(page.getByTestId('championship-splash')).toBeVisible();
   await expect(page.getByAltText('Anderson Heating and Cooling')).toBeVisible();
+  await expect(page.locator('body > .status-bar-strip')).toHaveCSS('background-color', 'rgb(252, 246, 234)');
 
   await page.waitForTimeout(4100);
   await expect(page.getByRole('heading', { name: 'Championship', exact: true })).toBeVisible();
+  await expect(page.locator('body > .status-bar-strip')).toHaveCSS('background-color', 'rgb(15, 122, 63)');
   await expect(page.getByTestId('championship-page')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Championship' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('button', { name: 'Schedule' })).toHaveCount(0);

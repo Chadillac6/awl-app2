@@ -30,7 +30,7 @@ const tabTitles = {
 };
 
 export const AppHeader = ({ activeTab }) => (
-  <header style={{ paddingTop: 'calc(env(safe-area-inset-top, 12px) + 8px)', paddingBottom: 14, paddingLeft: 18, paddingRight: 18, background: colors.green, borderBottomLeftRadius: 22, borderBottomRightRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+  <header style={{ paddingTop: 'calc(max(env(safe-area-inset-top, 0px), 6px) + 8px)', paddingBottom: 14, paddingLeft: 18, paddingRight: 18, background: colors.green, borderBottomLeftRadius: 22, borderBottomRightRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
     <div>
       <h1 style={{ fontFamily: '"Playfair Display", Georgia, serif', fontSize: 24, fontWeight: 700, color: colors.offWhite, margin: 0, lineHeight: 1.05 }}>{tabTitles[activeTab] || 'AWL'}</h1>
       <p style={{ fontSize: 11, color: colors.yellow, marginTop: 1, letterSpacing: 0.9, fontWeight: 600 }}>AM WALKING LEAGUE</p>
