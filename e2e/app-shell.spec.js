@@ -63,6 +63,18 @@ test('iOS status bar has a real full-width fixed green strip', async ({ page }) 
   expect(strip.widthRatio).toBeGreaterThanOrEqual(0.9);
 });
 
+test('header title clears the status bar strip when there is no safe-area inset', async ({ page }) => {
+  await page.goto('/');
+  await page.waitForTimeout(4100);
+
+  const { stripBottom, titleTop } = await page.evaluate(() => ({
+    stripBottom: document.querySelector('body > .status-bar-strip').getBoundingClientRect().bottom,
+    titleTop: document.querySelector('header h1').getBoundingClientRect().top,
+  }));
+
+  expect(titleTop).toBeGreaterThanOrEqual(stripBottom);
+});
+
 test('iOS status bar style is default so Home Screen apps get a solid status bar', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('meta[name="apple-mobile-web-app-status-bar-style"]')).toHaveAttribute('content', 'default');
