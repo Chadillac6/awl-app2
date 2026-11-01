@@ -40,6 +40,10 @@ body {
   background: #0f7a3f;
 }
 
+.championship-splash-active .status-bar-strip {
+  background: #fcf6ea;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

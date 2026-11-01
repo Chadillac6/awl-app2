@@ -8,6 +8,11 @@ const ChampionshipSplash = ({ onComplete }) => {
     return () => clearTimeout(timer);
   }, [onComplete]);
 
+  useEffect(() => {
+    document.documentElement.classList.add('championship-splash-active');
+    return () => document.documentElement.classList.remove('championship-splash-active');
+  }, []);
+
   return (
     <div data-testid="championship-splash" style={{
       position: 'fixed',
